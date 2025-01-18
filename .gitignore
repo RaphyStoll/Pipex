@@ -1,0 +1,10 @@
+pipex
+pipex_bonus
+*.o
+*.out
+*.a
+.vscode
+DS_Store
+a.out
+*.dSYM
+*.swp
