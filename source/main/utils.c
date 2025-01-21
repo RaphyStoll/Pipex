@@ -1,14 +1,17 @@
 #include "../../include/main/fonction.h"
+#include "../../include/main/colors.h"
 
-int arg_verif(int argc, char **argv)
+void arg_verif(int argc, char **argv)
 {
 	(void)argv;
 	if (argc != 5)
-		return(FALSE);
-	return(TRUE);
+		ft_exit_error("Wrong number of arguments");
+	ft_printf(GREEN BOLD "Arguments are correct\n");
 }
-void ft_exit_error(char *color, char *message)
+void ft_exit_error(char *message)
 {
-	ft_printf(RED BOLD"ERROR\n%s%s\n" , color, message);
+	(void)message;
+	ft_printf(RED BOLD"ERROR\n");
+	ft_printf(YELLOW "%s\n", message);
 	exit(0);
 }

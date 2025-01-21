@@ -2,9 +2,6 @@
 
 int main(int argc, char **argv)
 {
-	if (!arg_verif(argc, argv))
-	{
-		ft_exit_error(YELLOW, "Wrong number of arguments");
-	}
-
+	arg_verif(argc, argv);
+	
 }
