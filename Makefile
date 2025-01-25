@@ -55,7 +55,10 @@ ALL_LIBS      = $(FT_PRINTF_LIB) $(GNL_LIB)
 # ------------------------------------------------------------------------------
 MAIN_SRC = \
     main \
-    utils
+    utils \
+	init \
+	ft_split \
+	lib
 
 # Liste complète des sources principales
 MAIN_SRCS = $(addprefix $(MAIN_DIR)/, $(addsuffix .c, $(MAIN_SRC)))
