@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/25 20:47:46 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/25 20:56:30 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,6 @@ void	free_array(char **array);
 
 //! libc
 char	*ft_strdup(const char *s1);
-int	ft_strlen(const char *s);
-char	*ft_substr(char const *s, unsigned int start, size_t len);
+int		ft_strlen(const char *s);
+char	*ft_substr(char const *s, int start, int len);
 #endif

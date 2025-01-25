@@ -1,9 +1,9 @@
 #include "../../include/main/fonction.h"
 
-char	*ft_substr(char const *s, unsigned int start, size_t len)
+char	*ft_substr(char const *s, int start, int len)
 {
 	char	*dest;
-	size_t	i;
+	int	i;
 
 	if (!s)
 		return (NULL);
@@ -27,8 +27,8 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 char	*ft_strdup(const char *s1)
 {
 	char	*dup;
-	size_t	len;
-	size_t	i;
+	int	len;
+	int	i;
 
 	i = 0;
 	len = ft_strlen(s1);
@@ -48,7 +48,7 @@ char	*ft_strdup(const char *s1)
 
 int	ft_strlen(const char *s)
 {
-	size_t	len;
+	int	len;
 
 	len = 0;
 	while (s[len] != '\0')
