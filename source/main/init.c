@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 01:41:20 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:00:01 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,19 +17,19 @@ t_data	*init_data(t_data *data, char **argv)
 {
 	data = malloc(sizeof(t_data));
 	if (!data)
-		ft_exit_error("Malloc failed");
+		ft_exit_error(data, "Malloc failed");
 	if (access(argv[1], R_OK) == -1)
-		ft_exit_error("Input file not accessible");
+		ft_exit_error(data, "Input file not accessible");
 	data->fd_input = open(argv[1], O_RDONLY);
 	if (data->fd_input == -1)
-		ft_exit_error("Open input failed");
+		ft_exit_error(data, "Open input failed");
 	data->fd_output = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (data->fd_output == -1)
-		ft_exit_error("Open output failed");
+		ft_exit_error(data, "Open output failed");
 	if (access(argv[4], W_OK) == -1)
-		ft_exit_error("Output file not accessible");
+		ft_exit_error(data, "Output file not accessible");
 	if (pipe(data->fd_pipe) == -1)
-		ft_exit_error("Pipe failed");
+		ft_exit_error(data, "Pipe failed");
 	data->cmd1 = NULL;
 	data->cmd2 = NULL;
 	print_struct(data);
@@ -41,15 +41,16 @@ void	parse_cmd(t_data *data, char *cmd1, char *cmd2)
 {
 	data->cmd1 = ft_split(cmd1, ' ');
 	if (!data->cmd1)
-		ft_exit_error("Malloc cm1 failed");
+		ft_exit_error(data, "Malloc cm1 failed");
 	data->cmd2 = ft_split(cmd2, ' ');
 	if (!data->cmd2)
 	{
 		free_array(data->cmd1);
-		ft_exit_error("Malloc cm2 failed");
+		ft_exit_error(data, "Malloc cm2 failed");
 	}
 	data->paths =
 		"/bin/:/usr/bin/:/usr/local/bin/:/sbin/:/usr/sbin/:/usr/local/sbin/";
+	data->cmd_path = find_path(data);
 	print_struct(data);
 }
 
@@ -63,7 +64,7 @@ void print_struct(t_data *data)
 	ft_printf(CYAN"fd_pipe[1]: %d\n", data->fd_pipe[1]);
 	i = 0;
 	if (data->cmd1)
-		while (data->cmd1[i]) //*
+		while (data->cmd1[i])
 		{
 			printf("cmd1[%d]: %s\n", i, data->cmd1[i]);
 			i++;
@@ -75,5 +76,23 @@ void print_struct(t_data *data)
 			printf("cmd2[%d]: %s\n", i, data->cmd2[i]);
 			i++;
 		}
+	printf("cmd_path: %s\n", data->cmd_path);
 }
 
+char 	*find_path(t_data *data)
+{
+	char **cmd_paths;
+	int i;
+
+	cmd_paths = ft_split(data->paths, ':');
+	i = 0;
+	while(cmd_paths[i])
+	{
+		if (access(cmd_paths[i], X_OK) == 0)
+			break;
+		i++;
+	}
+	cmd_paths[i] = ft_strjoin(cmd_paths[i], data->cmd1[0]);
+
+	return (cmd_paths[i]);
+}

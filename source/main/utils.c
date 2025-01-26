@@ -6,24 +6,22 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 01:55:53 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:01:11 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/main/fonction.h"
 #include "../../include/main/colors.h"
-#include <stdio.h>
 
-void arg_verif(int argc, char **argv)
+void arg_verif(t_data *data)
 {
-	(void)argv;
-	if (argc != 5)
-		ft_exit_error("Wrong number of arguments");
+	if (data->argc != 5)
+		ft_exit_error(data, "Wrong number of arguments");
 	ft_printf(GREEN BOLD "Arguments are correct\n");
 }
-void ft_exit_error(char *message)
+void ft_exit_error(t_data *data, char *message)
 {
-	(void)message;
+	free_all(data);
 	ft_printf(RED BOLD"ERROR\n");
 	ft_printf(YELLOW "%s\n", message);
 	exit(0);
@@ -49,19 +47,6 @@ void printf_struct(t_data *data)
 		i++;
 	}
 	printf(GREEN"===end printf struct===\n");
-}
-
-void	free_array(char **array)
-{
-	int	i;
-
-	i = 0;
-	while (array[i])
-	{
-		free(array[i]);
-		i++;
-	}
-	free(array);
 }
 
 char	*ft_strjoin(char const *s1, char const *s2)
