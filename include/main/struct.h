@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:30 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:00:50 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:09:41 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 
 typedef struct s_data
 {
-	int 	argc;
-	char	**argv;
 	int		fd_input;
 	int		fd_output;
 	int		fd_pipe[2];

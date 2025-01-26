@@ -6,16 +6,17 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:01:11 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:10:20 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/main/fonction.h"
 #include "../../include/main/colors.h"
 
-void arg_verif(t_data *data)
+void arg_verif(t_data *data, int argc, char **argv)
 {
-	if (data->argc != 5)
+	(void)argv;
+	if (argc != 5)
 		ft_exit_error(data, "Wrong number of arguments");
 	ft_printf(GREEN BOLD "Arguments are correct\n");
 }

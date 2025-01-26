@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:16 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:02:07 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:10:51 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,7 @@ int main(int argc, char **argv)
 	t_data *data;
 
 	data = NULL;
-	data->argc = argc;
-	data->argv = argv;
-	arg_verif(data);
+	arg_verif(data, argc, argv);
 	data = init_data(data, argv);
 	proces(data);
 	//printf_struct(data);
