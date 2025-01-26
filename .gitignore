@@ -1,3 +1,4 @@
+output/*
 pipex
 pipex_bonus
 *.o

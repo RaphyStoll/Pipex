@@ -59,7 +59,8 @@ MAIN_SRC = \
 	ft_split \
 	lib \
 	init \
-	noyaux
+	noyaux \
+	free
 
 # Liste complète des sources principales
 MAIN_SRCS = $(addprefix $(MAIN_DIR)/, $(addsuffix .c, $(MAIN_SRC)))

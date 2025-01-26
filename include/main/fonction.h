@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 01:56:13 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:01:20 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,11 +27,14 @@
 int main(int argc, char **argv);
 
 //! utils
-void arg_verif(int argc, char **argv);
-void ft_exit_error(char *message);
+void arg_verif(t_data *data);
+void ft_exit_error(t_data *data, char *message);
 void printf_struct(t_data *data);
-void	free_array(char **array);
 char	*ft_strjoin(char const *s1, char const *s2);
+
+//! free
+void	free_all(t_data *data);
+void	free_array(char **array);
 
 //! init
 t_data	*init_data(t_data *data, char **argv);
