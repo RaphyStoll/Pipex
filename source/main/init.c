@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:40:44 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 18:18:37 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,11 +32,11 @@ t_data	*init_data(t_data *data, char **argv)
 		ft_exit_error(data, "Pipe failed");
 	data->cmd1 = NULL;
 	data->cmd2 = NULL;
-	parse_cmd(data, argv[2], argv[3]);
+	data = parse_cmd(data, argv[2], argv[3]);
 	return (data);
 }
 
-void	parse_cmd(t_data *data, char *cmd1, char *cmd2)
+t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2)
 {
 	data->cmd1 = ft_split(cmd1, ' ');
 	if (!data->cmd1)
@@ -52,6 +52,7 @@ void	parse_cmd(t_data *data, char *cmd1, char *cmd2)
 	data->cmd_path = find_path(data);
 
 	print_struct(data);
+	return (data);
 }
 
 void print_struct(t_data *data)
