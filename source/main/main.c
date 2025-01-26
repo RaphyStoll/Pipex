@@ -23,5 +23,6 @@ int main(int argc, char **argv)
 	arg_verif(data, argc, argv);
 	data = init_data(data, argv);
 	proces(data);
+	free_all(data);
 	//printf_struct(data);
 }

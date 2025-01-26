@@ -28,10 +28,10 @@ void	free_all(t_data *data)
 
 void	free_array(char **array)
 {
-	if (!array)
-		return ;
 	int	i;
 
+	if (!array)
+		return ;
 	i = 0;
 	while (array[i])
 	{

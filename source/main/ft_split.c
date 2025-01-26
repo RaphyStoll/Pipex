@@ -46,6 +46,8 @@ char	*get_next_word(char const *s, char c, int *index)
 	while (s[*index] && s[*index] != c)
 		(*index)++;
 	len = *index - start;
+	if (len <= 0)
+		return  (NULL);
 	return (ft_substr(s, start, len));
 }
 
