@@ -6,7 +6,7 @@
 /*   By: raphael <raphael@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 19:31:25 by raphael          ###   ########.fr       */
+/*   Updated: 2025/01/26 22:09:38 by raphael          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ t_data	*init_data(t_data *data, char **argv)
 	data = malloc(sizeof(t_data));
 	if (!data)
 		ft_exit_error(data, "Malloc failed");
+	default_init(data);
 	if (access(argv[1], R_OK) == -1)
 		ft_exit_error(data, "Input file not accessible");
 	data->fd_input = open(argv[1], O_RDONLY);
@@ -106,4 +107,17 @@ char 	*find_path(t_data *data, char *cmd)
 		ft_exit_error(data, "Malloc path failed");
 	free_array(cmd_paths);
 	return (path);
+}
+
+void	default_init(t_data *data)
+{
+	data->fd_input = 0;
+	data->fd_output = 0;
+	data->fd_pipe[0] = 0;
+	data->fd_pipe[1] = 0;
+	data->cmd1 = NULL;
+	data->cmd2 = NULL;
+	data->paths = NULL;
+	data->cmd_path = NULL;
+	data->cmd_path2 = NULL;
 }

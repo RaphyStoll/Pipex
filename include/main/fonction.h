@@ -6,7 +6,7 @@
 /*   By: raphael <raphael@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 19:31:16 by raphael          ###   ########.fr       */
+/*   Updated: 2025/01/26 22:09:54 by raphael          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ void	free_array(char **array);
 //! init
 t_data	*init_data(t_data *data, char **argv);
 t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2);
+void	default_init(t_data *data);
 
 //! split
 char	**ft_split(char const *s, char c);
