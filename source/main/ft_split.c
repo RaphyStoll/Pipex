@@ -6,67 +6,81 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 19:13:28 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/25 20:43:18 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/25 22:40:29 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/main/fonction.h"
 
-
-static int	count_words(const char *str, char c)
+int	count_words(const char *s, char c)
 {
-   int	count;
-   int	i;
+	int	count;
+	int	in_substring;
+	int	i;
 
-   count = 0;
-   i = 0;
-   while (str[i])
-   {
-   	if (str[i] != c && (i == 0 || str[i - 1] == c))
-   		count++;
-   	i++;
-   }
-   return (count);
+	count = 0;
+	in_substring = 0;
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] != c && in_substring == 0)
+		{
+			in_substring = 1;
+			count++;
+		}
+		else if (s[i] == c)
+			in_substring = 0;
+		i++;
+	}
+	return (count);
 }
 
-static void	get_word(t_split *sp, const char *str, char c, int i)
+char	*get_next_word(char const *s, char c, int *index)
 {
-   sp->start = i;
-   while (str[i] && str[i] != c)
-   	i++;
-   sp->len = i - sp->start;
-   sp->words[sp->word_count] = ft_substr(str, sp->start, sp->len);
-   if (!sp->words[sp->word_count])
-   {
-   	while (sp->word_count > 0)
-   		free(sp->words[--sp->word_count]);
-   	free(sp->words);
-   	sp->words = NULL;
-   }
-   sp->word_count++;
+	int	start;
+	int	len;
+
+	while (s[*index] && s[*index] == c)
+		(*index)++;
+	start = *index;
+	while (s[*index] && s[*index] != c)
+		(*index)++;
+	len = *index - start;
+	return (ft_substr(s, start, len));
 }
 
-char	**ft_split(char const *str, char c)
+char	**allocate_and_fill(char const *s, char c)
 {
-   t_split	sp;
-   int		i;
+	char	**split;
+	int		count;
+	int		index;
+	int		i;
+	char	*word;
 
-   if (!str)
-   	return (NULL);
-   sp.words = malloc(sizeof(char *) * (count_words(str, c) + 1));
-   if (!sp.words)
-   	return (NULL);
-   sp.word_count = 0;
-   i = 0;
-   while (str[i])
-   {
-   	if (str[i] != c && (i == 0 || str[i - 1] == c))
-   		get_word(&sp, str, c, i);
-   	if (!sp.words)
-   		return (NULL);
-   	i++;
-   }
-   sp.words[sp.word_count] = NULL;
-   return (sp.words);
+	count = count_words(s, c);
+	split = malloc((count + 1) * sizeof(char *));
+	if (!split)
+		return (NULL);
+	index = 0;
+	i = 0;
+	while (i < count)
+	{
+		word = get_next_word(s, c, &index);
+		if (!word)
+		{
+			free_array(split);
+			return (NULL);
+		}
+		split[i] = word;
+		i++;
+	}
+	split[count] = NULL;
+	return (split);
 }
 
+char	**ft_split(char const *s, char c)
+{
+	if (!s)
+		return (NULL);
+	return (allocate_and_fill(s, c));
+}
