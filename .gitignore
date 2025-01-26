@@ -8,3 +8,5 @@ DS_Store
 a.out
 *.dSYM
 *.swp
+*.txt
+test/*
