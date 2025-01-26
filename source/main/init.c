@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
+/*   By: raphael <raphael@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 18:18:37 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 19:31:25 by raphael          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2)
 	}
 	data->paths =
 		"/bin/:/usr/bin/:/usr/local/bin/:/sbin/:/usr/sbin/:/usr/local/sbin/";
-	data->cmd_path = find_path(data);
+	data->cmd_path = find_path(data, data->cmd1[0]);
 
 	print_struct(data);
 	return (data);
@@ -80,7 +80,7 @@ void print_struct(t_data *data)
 	printf("cmd_path: %s\n", data->cmd_path);
 }
 
-char 	*find_path(t_data *data)
+char 	*find_path(t_data *data, char *cmd)
 {
 	char	**cmd_paths;
 	char	*path;
@@ -93,7 +93,7 @@ char 	*find_path(t_data *data)
 	i = 0;
 	 while (cmd_paths[i])
 	{
-		tmp = ft_strjoin(cmd_paths[i], data->cmd1[0]);
+		tmp = ft_strjoin(cmd_paths[i], cmd);
 		if (!tmp)
 			ft_exit_error(data, "Malloc tmp failed");
 		if (access(tmp, X_OK) == 0)
@@ -101,7 +101,7 @@ char 	*find_path(t_data *data)
 		free(tmp);
 		i++;
 	}
-	path = ft_strjoin(cmd_paths[i], data->cmd1[0]);
+	path = ft_strjoin(cmd_paths[i], cmd);
 	if (!path)
 		ft_exit_error(data, "Malloc path failed");
 	free_array(cmd_paths);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fonction.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
+/*   By: raphael <raphael@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 18:18:26 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 19:31:16 by raphael          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,16 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <sys/wait.h>
 #include <stdio.h>
 
 //!int main
 int main(int argc, char **argv);
 
 //! utils
-void arg_verif(t_data *data, int argc, char **argv);
-void ft_exit_error(t_data *data, char *message);
-void printf_struct(t_data *data);
+void	arg_verif(t_data *data, int argc, char **argv);
+void	ft_exit_error(t_data *data, char *message);
+void	printf_struct(t_data *data);
 char	*ft_strjoin(char const *s1, char const *s2);
 
 //! free
@@ -52,8 +53,8 @@ int		ft_strlen(const char *s);
 char	*ft_substr(char const *s, int start, int len);
 
 //! noyaux
-void proces(t_data *data);
-char 	*find_path(t_data *data);
+void	proces(t_data *data);
+char 	*find_path(t_data *data, char *cmd);
 
 //! debug
 void	print_struct(t_data *data);
