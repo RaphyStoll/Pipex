@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/26 15:41:34 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 15:59:10 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:41:51 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,12 @@
 
 void	free_all(t_data *data)
 {
+	if (!data)
+		return ;
 	if (data->cmd1)
 		free_array(data->cmd1);
 	if (data->cmd2)
 		free_array(data->cmd2);
-	if (data->paths)
-		free(data->paths);
 	if (data->cmd_path)
 		free(data->cmd_path);
 	if (data)

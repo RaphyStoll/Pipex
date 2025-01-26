@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:00:01 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/26 16:40:44 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,6 @@ t_data	*init_data(t_data *data, char **argv)
 		ft_exit_error(data, "Pipe failed");
 	data->cmd1 = NULL;
 	data->cmd2 = NULL;
-	print_struct(data);
 	parse_cmd(data, argv[2], argv[3]);
 	return (data);
 }
@@ -51,6 +50,7 @@ void	parse_cmd(t_data *data, char *cmd1, char *cmd2)
 	data->paths =
 		"/bin/:/usr/bin/:/usr/local/bin/:/sbin/:/usr/sbin/:/usr/local/sbin/";
 	data->cmd_path = find_path(data);
+
 	print_struct(data);
 }
 
@@ -81,18 +81,28 @@ void print_struct(t_data *data)
 
 char 	*find_path(t_data *data)
 {
-	char **cmd_paths;
-	int i;
+	char	**cmd_paths;
+	char	*path;
+	int		i;
+	char	*tmp;
 
 	cmd_paths = ft_split(data->paths, ':');
+	if (!cmd_paths)
+		ft_exit_error(data, "Malloc cmd_paths failed");
 	i = 0;
-	while(cmd_paths[i])
+	 while (cmd_paths[i])
 	{
-		if (access(cmd_paths[i], X_OK) == 0)
-			break;
+		tmp = ft_strjoin(cmd_paths[i], data->cmd1[0]);
+		if (!tmp)
+			ft_exit_error(data, "Malloc tmp failed");
+		if (access(tmp, X_OK) == 0)
+			return (free_array(cmd_paths),tmp);
+		free(tmp);
 		i++;
 	}
-	cmd_paths[i] = ft_strjoin(cmd_paths[i], data->cmd1[0]);
-
-	return (cmd_paths[i]);
+	path = ft_strjoin(cmd_paths[i], data->cmd1[0]);
+	if (!path)
+		ft_exit_error(data, "Malloc path failed");
+	free_array(cmd_paths);
+	return (path);
 }
