@@ -31,7 +31,13 @@ CUSTOM_TEST=0
 FOCUS_TEST=""
 NORMINETTE=0
 BONUS=0
+GENERATE_REPORT=0
 START_TIME=$(date +%s)
+
+# Variables pour le résumé des tests
+declare -a test_details=()
+declare -A test_times=()
+declare -A test_leaks=()
 
 # Détection de l'OS
 OS=$(uname -s)
@@ -209,12 +215,42 @@ show_help() {
     echo "  -c, --custom       Permet d'entrer ses propres commandes à tester"
     echo "  -n, --norm         Vérifie la norme"
     echo "  -b, --bonus        Active les tests bonus (here_doc)"
+    echo "  -r, --report       Génère un rapport HTML des tests"
     echo ""
     echo "Exemple d'utilisation:"
     echo "  $0 -v -l          # Tests verbeux avec vérification des fuites"
     echo "  $0 -f 5           # Exécute uniquement le test numéro 5"
     echo "  $0 -c             # Lance le mode de test personnalisé"
     exit 0
+}
+
+# Fonction pour afficher le résumé dans le terminal
+display_terminal_summary() {
+    echo -e "\n${BOLD}=== Résumé des tests ===${NC}"
+    echo -e "Tests réussis: ${GREEN}$passed_tests${NC}/$total_tests"
+    echo -e "Tests échoués: ${RED}$((total_tests - passed_tests))${NC}/$total_tests"
+    echo -e "\nTemps total d'exécution: $(measure_time $START_TIME) secondes"
+
+    if [ ${#test_details[@]} -gt 0 ]; then
+        echo -e "\n${BOLD}Détails des tests :${NC}"
+        for detail in "${test_details[@]}"; do
+            echo -e "$detail"
+        done
+    fi
+
+    if [ $TIME_EXEC -eq 1 ]; then
+        echo -e "\n${BOLD}Temps d'exécution par test :${NC}"
+        for test_name in "${!test_times[@]}"; do
+            echo -e "  $test_name: ${test_times[$test_name]} secondes"
+        done
+    fi
+
+    if [ $CHECK_LEAKS -eq 1 ]; then
+        echo -e "\n${BOLD}Résumé des fuites mémoire :${NC}"
+        for test_name in "${!test_leaks[@]}"; do
+            echo -e "  $test_name: ${test_leaks[$test_name]}"
+        done
+    fi
 }
 
 # Traitement des arguments amélioré
@@ -251,6 +287,9 @@ while [[ $# -gt 0 ]]; do
         -b|--bonus)
             BONUS=1
             ;;
+        -r|--report)
+            GENERATE_REPORT=1
+            ;;
         *)
             echo "Option invalide: $1"
             show_help
@@ -276,5 +315,10 @@ fi
 
 # Le reste du script (tests) reste identique, mais avec les nouvelles fonctionnalités activées selon les options
 
-# Génération du rapport HTML à la fin
-generate_html_report
+# Affichage du résumé dans le terminal
+display_terminal_summary
+
+# Génération du rapport HTML si demandé
+if [ $GENERATE_REPORT -eq 1 ]; then
+    generate_html_report
+fi
