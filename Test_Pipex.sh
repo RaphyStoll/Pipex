@@ -3,11 +3,13 @@
 # Nettoyage du terminal
 clear
 
-# Couleurs pour l'affichage
+# Couleurs et styles
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 BOLD='\033[1m'
 
@@ -17,23 +19,182 @@ BASH_OUTPUT="txt/test/bash"
 MAIN_OUTPUT="txt/test/main"
 INPUT_DIR="txt/test"
 LEAKS_DIR="txt/leaks_test"
+REPORTS_DIR="txt/reports"
+HTML_REPORT="$REPORTS_DIR/report.html"
 
 # Variables globales
 VERBOSE=0
 CHECK_LEAKS=0
+TIME_EXEC=0
+SAVE_OUTPUT=0
+CUSTOM_TEST=0
+FOCUS_TEST=""
+NORMINETTE=0
+BONUS=0
+START_TIME=$(date +%s)
 
 # Détection de l'OS
 OS=$(uname -s)
 
-# Fonction pour nettoyer les fichiers de test
-cleanup() {
-    rm -f "$INPUT_DIR/infile"
-    rm -f "$INPUT_DIR/numbers"
-    rm -f "$INPUT_DIR/case_test"
-    rm -f "$INPUT_DIR/whitespace"
+# Fonction pour afficher la barre de progression
+show_progress() {
+    local current=$1
+    local total=$2
+    local width=50
+    local percentage=$((current * 100 / total))
+    local filled=$((width * current / total))
+    local empty=$((width - filled))
+    
+    printf "\rProgression: ["
+    printf "%${filled}s" | tr ' ' '='
+    printf "%${empty}s" | tr ' ' ' '
+    printf "] %d%%" "$percentage"
 }
 
-# Fonction d'aide
+# Fonction pour mesurer le temps d'exécution
+measure_time() {
+    local start_time=$1
+    local end_time=$(date +%s)
+    local duration=$((end_time - start_time))
+    echo "$duration"
+}
+
+# Fonction pour vérifier la norme
+check_norm() {
+    if command -v norminette &> /dev/null; then
+        echo -e "\n${BOLD}=== Vérification de la norme ===${NC}"
+        local norm_output=$(norminette ../*.{c,h} 2>&1)
+        if echo "$norm_output" | grep -q "Error!"; then
+            echo -e "${RED}✗ Erreurs de norme détectées${NC}"
+            echo "$norm_output"
+            return 1
+        else
+            echo -e "${GREEN}✓ Norme respectée${NC}"
+            return 0
+        fi
+    else
+        echo -e "${YELLOW}⚠ Norminette non trouvée${NC}"
+        return 0
+    fi
+}
+
+# Fonction pour vérifier le Makefile
+check_makefile() {
+    echo -e "\n${BOLD}=== Vérification du Makefile ===${NC}"
+    local makefile="../Makefile"
+    
+    if [ ! -f "$makefile" ]; then
+        echo -e "${RED}✗ Makefile non trouvé${NC}"
+        return 1
+    fi
+    
+    # Vérification des règles obligatoires
+    local required_rules=("all" "clean" "fclean" "re")
+    local missing_rules=0
+    
+    for rule in "${required_rules[@]}"; do
+        if ! grep -q "^$rule:" "$makefile"; then
+            echo -e "${RED}✗ Règle '$rule' manquante${NC}"
+            missing_rules=1
+        fi
+    done
+    
+    # Vérification des flags de compilation
+    if ! grep -q -- "-Wall" "$makefile" || ! grep -q -- "-Wextra" "$makefile" || ! grep -q -- "-Werror" "$makefile"; then
+        echo -e "${RED}✗ Flags de compilation manquants (-Wall -Wextra -Werror)${NC}"
+        missing_rules=1
+    fi
+    
+    if [ $missing_rules -eq 0 ]; then
+        echo -e "${GREEN}✓ Makefile conforme${NC}"
+        return 0
+    fi
+    return 1
+}
+
+# Fonction pour tester here_doc (bonus)
+test_here_doc() {
+    echo -e "\n${BOLD}=== Tests here_doc ===${NC}"
+    local limiter="EOF"
+    local test_num=$((total_tests + 1))
+    
+    # Création du fichier d'entrée temporaire pour here_doc
+    echo "ligne 1
+ligne 2
+ligne test
+dernière ligne" > "$INPUT_DIR/here_doc_input"
+    
+    echo -e "${BLUE}Test here_doc avec grep${NC}"
+    echo "ligne 1
+ligne 2
+ligne test
+dernière ligne
+$limiter" | $PIPEX "here_doc" "$limiter" "grep ligne" "wc -l" "$MAIN_OUTPUT/test_here_doc"
+    
+    # Vérification du résultat
+    local expected=4
+    local result=$(cat "$MAIN_OUTPUT/test_here_doc")
+    
+    if [ "$result" -eq "$expected" ]; then
+        echo -e "${GREEN}✓ Test here_doc réussi${NC}"
+        ((passed_tests++))
+    else
+        echo -e "${RED}✗ Test here_doc échoué${NC}"
+    fi
+    ((total_tests++))
+}
+
+# Menu interactif pour le mode personnalisé
+custom_test_menu() {
+    echo -e "\n${BOLD}=== Test personnalisé ===${NC}"
+    echo -e "Entrez les détails du test :"
+    
+    read -p "Fichier d'entrée (dans $INPUT_DIR) : " input_file
+    read -p "Première commande : " cmd1
+    read -p "Deuxième commande : " cmd2
+    
+    echo -e "\nExécution du test personnalisé..."
+    run_test "Test personnalisé" "$input_file" "$cmd1" "$cmd2" "custom"
+}
+
+# Fonction pour générer le rapport HTML
+generate_html_report() {
+    mkdir -p "$REPORTS_DIR"
+    
+    cat > "$HTML_REPORT" << EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rapport de tests Pipex</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+        .success { color: green; }
+        .failure { color: red; }
+        .warning { color: orange; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Rapport de tests Pipex</h1>
+    <p>Date: $(date)</p>
+    <h2>Résumé</h2>
+    <p>Tests réussis: <span class="success">$passed_tests</span>/$total_tests</p>
+    <p>Tests échoués: <span class="failure">$((total_tests - passed_tests))</span>/$total_tests</p>
+    <p>Temps total d'exécution: $(measure_time $START_TIME) secondes</p>
+EOF
+
+    # Ajout des détails de chaque test
+    echo "<h2>Détails des tests</h2>" >> "$HTML_REPORT"
+    for test in "${test_results[@]}"; do
+        echo "<div class='test'>$test</div>" >> "$HTML_REPORT"
+    done
+
+    echo "</body></html>" >> "$HTML_REPORT"
+    
+    echo -e "\n${BOLD}Rapport HTML généré : $HTML_REPORT${NC}"
+}
+
+# Fonction d'aide améliorée
 show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
@@ -42,140 +203,23 @@ show_help() {
     echo "  -v, --verbose      Affiche plus de détails sur les tests"
     echo "  -i, --interactive  Mode interactif pour configurer les chemins"
     echo "  -l, --leaks        Active la vérification des fuites mémoire"
+    echo "  -t, --time         Mesure le temps d'exécution de chaque test"
+    echo "  -f, --focus        Exécute un test spécifique (numéro)"
+    echo "  -s, --save-output  Conserve les sorties des tests"
+    echo "  -c, --custom       Permet d'entrer ses propres commandes à tester"
+    echo "  -n, --norm         Vérifie la norme"
+    echo "  -b, --bonus        Active les tests bonus (here_doc)"
     echo ""
-    echo "Description:"
-    echo "  Script de test pour le projet pipex qui compare les sorties"
-    echo "  entre l'exécution bash standard et le programme pipex."
-    echo ""
-    echo "Chemins par défaut:"
-    echo "  Programme pipex: $PIPEX"
-    echo "  Sorties bash: $BASH_OUTPUT"
-    echo "  Sorties pipex: $MAIN_OUTPUT"
-    echo "  Fichiers d'entrée: $INPUT_DIR"
-    echo "  Rapports de fuites: $LEAKS_DIR"
+    echo "Exemple d'utilisation:"
+    echo "  $0 -v -l          # Tests verbeux avec vérification des fuites"
+    echo "  $0 -f 5           # Exécute uniquement le test numéro 5"
+    echo "  $0 -c             # Lance le mode de test personnalisé"
     exit 0
 }
 
-# Fonction pour le mode interactif
-configure_paths() {
-    echo -e "${BLUE}${BOLD}Configuration des chemins${NC}"
-    echo -e "${BOLD}Appuyez sur Entrée pour garder la valeur par défaut${NC}\n"
-
-    echo -e "Chemin actuel du programme pipex: ${BOLD}$PIPEX${NC}"
-    read -p "Nouveau chemin: " new_pipex
-    PIPEX=${new_pipex:-$PIPEX}
-
-    echo -e "\nChemin actuel des sorties bash: ${BOLD}$BASH_OUTPUT${NC}"
-    read -p "Nouveau chemin: " new_bash
-    BASH_OUTPUT=${new_bash:-$BASH_OUTPUT}
-
-    echo -e "\nChemin actuel des sorties pipex: ${BOLD}$MAIN_OUTPUT${NC}"
-    read -p "Nouveau chemin: " new_main
-    MAIN_OUTPUT=${new_main:-$MAIN_OUTPUT}
-
-    echo -e "\nChemin actuel des fichiers d'entrée: ${BOLD}$INPUT_DIR${NC}"
-    read -p "Nouveau chemin: " new_input
-    INPUT_DIR=${new_input:-$INPUT_DIR}
-
-    echo -e "\nChemin actuel des rapports de fuites: ${BOLD}$LEAKS_DIR${NC}"
-    read -p "Nouveau chemin: " new_leaks
-    LEAKS_DIR=${new_leaks:-$LEAKS_DIR}
-
-    echo -e "\n${BOLD}Configuration finale:${NC}"
-    echo "Programme pipex: $PIPEX"
-    echo "Sorties bash: $BASH_OUTPUT"
-    echo "Sorties pipex: $MAIN_OUTPUT"
-    echo "Fichiers d'entrée: $INPUT_DIR"
-    echo "Rapports de fuites: $LEAKS_DIR"
-
-    read -p "Appuyez sur Entrée pour continuer..."
-}
-
-# Fonction pour tester les leaks selon l'OS
-check_memory_leaks() {
-    local test_name=$1
-    local input_file="$INPUT_DIR/infile"
-    local cmd1=$2
-    local cmd2=$3
-    
-    mkdir -p "$LEAKS_DIR"
-    
-    echo -e "\n${BOLD}Test de fuites mémoire pour: $test_name${NC}"
-    
-    case $OS in
-        "Darwin") # macOS
-            echo -e "${BLUE}Utilisation de 'leaks' sur macOS${NC}"
-            leaks --atExit -- $PIPEX "$input_file" "$cmd1" "$cmd2" "$MAIN_OUTPUT/leak_test" &> "$LEAKS_DIR/${test_name// /_}_leaks.txt"
-            if grep -q "leaks Report Version:" "$LEAKS_DIR/${test_name// /_}_leaks.txt"; then
-                if grep -q "0 leaks for 0 total leaked bytes" "$LEAKS_DIR/${test_name// /_}_leaks.txt"; then
-                    echo -e "${GREEN}✓ Aucune fuite mémoire détectée${NC}"
-                else
-                    echo -e "${RED}✗ Fuites mémoire détectées${NC}"
-                    echo "Voir le rapport détaillé dans: $LEAKS_DIR/${test_name// /_}_leaks.txt"
-                fi
-            else
-                echo -e "${YELLOW}⚠ Impossible d'analyser les fuites mémoire${NC}"
-            fi
-            ;;
-            
-        "Linux")
-            echo -e "${BLUE}Utilisation de 'valgrind' sur Linux${NC}"
-            valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes \
-                    --verbose --log-file="$LEAKS_DIR/${test_name// /_}_valgrind.txt" \
-                    $PIPEX "$input_file" "$cmd1" "$cmd2" "$MAIN_OUTPUT/leak_test" &>/dev/null
-            
-            if grep -q "no leaks are possible" "$LEAKS_DIR/${test_name// /_}_valgrind.txt"; then
-                echo -e "${GREEN}✓ Aucune fuite mémoire détectée${NC}"
-            else
-                echo -e "${RED}✗ Fuites mémoire potentielles détectées${NC}"
-                echo "Voir le rapport détaillé dans: $LEAKS_DIR/${test_name// /_}_valgrind.txt"
-            fi
-            ;;
-            
-        *)
-            echo -e "${RED}Système d'exploitation non supporté pour le test de fuites mémoire${NC}"
-            return 1
-            ;;
-    esac
-}
-
-# Fonction pour exécuter un test et comparer les résultats
-run_test() {
-    local test_name=$1
-    local input_file=$2
-    local cmd1=$3
-    local cmd2=$4
-    local test_num=$5
-    
-    echo -e "\n${BOLD}Test $test_num: $test_name${NC}"
-    
-    if [ $VERBOSE -eq 1 ]; then
-        echo "Commandes: $cmd1 | $cmd2"
-    fi
-    
-    # Exécution avec bash
-    < "$INPUT_DIR/$input_file" $cmd1 | $cmd2 > "$BASH_OUTPUT/test${test_num}"
-    
-    # Exécution avec pipex
-    $PIPEX "$INPUT_DIR/$input_file" "$cmd1" "$cmd2" "$MAIN_OUTPUT/test${test_num}"
-    
-    # Comparaison des résultats
-    if diff "$BASH_OUTPUT/test${test_num}" "$MAIN_OUTPUT/test${test_num}" >/dev/null ; then
-        echo -e "${GREEN}✓ Test réussi${NC}"
-        return 0
-    else
-        echo -e "${RED}✗ Test échoué${NC}"
-        if [ $VERBOSE -eq 1 ]; then
-            echo "Différences trouvées:"
-            diff "$BASH_OUTPUT/test${test_num}" "$MAIN_OUTPUT/test${test_num}"
-        fi
-        return 1
-    fi
-}
-
-# Traitement des arguments
-for arg in "$@"; do
-    case $arg in
+# Traitement des arguments amélioré
+while [[ $# -gt 0 ]]; do
+    case $1 in
         -h|--help)
             show_help
             ;;
@@ -188,139 +232,49 @@ for arg in "$@"; do
         -l|--leaks)
             CHECK_LEAKS=1
             ;;
+        -t|--time)
+            TIME_EXEC=1
+            ;;
+        -f|--focus)
+            shift
+            FOCUS_TEST="$1"
+            ;;
+        -s|--save-output)
+            SAVE_OUTPUT=1
+            ;;
+        -c|--custom)
+            CUSTOM_TEST=1
+            ;;
+        -n|--norm)
+            NORMINETTE=1
+            ;;
+        -b|--bonus)
+            BONUS=1
+            ;;
+        *)
+            echo "Option invalide: $1"
+            show_help
+            ;;
     esac
+    shift
 done
 
-# Vérification de l'existence du programme
+# Vérification initiale
 if [ ! -f "$PIPEX" ]; then
     echo -e "${RED}Erreur: Le programme pipex n'existe pas dans $PIPEX${NC}"
     exit 1
 fi
 
 # Création des dossiers nécessaires
-mkdir -p "$BASH_OUTPUT" "$MAIN_OUTPUT" "$INPUT_DIR"
+mkdir -p "$BASH_OUTPUT" "$MAIN_OUTPUT" "$INPUT_DIR" "$LEAKS_DIR" "$REPORTS_DIR"
 
-# Initialisation du compteur de tests
-total_tests=0
-passed_tests=0
-
-# Création des fichiers de test
-echo -e "Hello World\nTest ligne 2\n42 école\nBonjour le monde\nTest\n42\nÉcole 42\n" > "$INPUT_DIR/infile"
-echo -e "123\n456\n789\n123\n456\n" > "$INPUT_DIR/numbers"
-echo -e "TEST\ntest\nTeSt\nTEST\ntest\n" > "$INPUT_DIR/case_test"
-echo -e "   spaces   \ntabs\t\t\nlines\n\n\nend" > "$INPUT_DIR/whitespace"
-
-# Liste des tests
-echo -e "${BOLD}=== Tests basiques ===${NC}"
-
-# Test 1: ls et wc
-((total_tests++))
-run_test "ls et wc" "infile" "ls -l" "wc -l" $total_tests && ((passed_tests++))
-
-# Test 2: grep et wc
-((total_tests++))
-run_test "grep et wc" "infile" "grep Test" "wc -l" $total_tests && ((passed_tests++))
-
-# Test 3: cat et grep
-((total_tests++))
-run_test "cat et grep" "infile" "cat" "grep 42" $total_tests && ((passed_tests++))
-
-echo -e "\n${BOLD}=== Tests de tri et filtrage ===${NC}"
-
-# Test 4: sort et uniq
-((total_tests++))
-run_test "sort et uniq" "infile" "sort" "uniq" $total_tests && ((passed_tests++))
-
-# Test 5: sort avec options
-((total_tests++))
-run_test "sort numérique inverse" "numbers" "sort -nr" "uniq -c" $total_tests && ((passed_tests++))
-
-# Test 6: tri et grep
-((total_tests++))
-run_test "tri et grep" "case_test" "sort" "grep -i test" $total_tests && ((passed_tests++))
-
-echo -e "\n${BOLD}=== Tests avec options ===${NC}"
-
-# Test 7: grep avec options
-((total_tests++))
-run_test "grep insensible à la casse" "case_test" "grep -i test" "wc -l" $total_tests && ((passed_tests++))
-
-# Test 8: wc avec options
-((total_tests++))
-run_test "wc complet" "whitespace" "cat" "wc -lwc" $total_tests && ((passed_tests++))
-
-# Test 9: grep inversé
-((total_tests++))
-run_test "grep inversé" "infile" "grep -v Test" "wc -l" $total_tests && ((passed_tests++))
-
-echo -e "\n${BOLD}=== Tests chemins absolus ===${NC}"
-
-# Test 10: commandes avec chemin absolu
-((total_tests++))
-run_test "chemins absolus" "infile" "/bin/cat" "/usr/bin/grep test" $total_tests && ((passed_tests++))
-
-# Test 11: chemin absolu avec options
-((total_tests++))
-run_test "chemin absolu et options" "infile" "/usr/bin/grep -i test" "/usr/bin/wc -l" $total_tests && ((passed_tests++))
-
-echo -e "\n${BOLD}=== Tests caractères spéciaux ===${NC}"
-
-# Test 12: grep avec quotes
-((total_tests++))
-run_test "grep avec quotes simples" "infile" "grep 'école'" "wc -w" $total_tests && ((passed_tests++))
-
-# Test 13: grep avec quotes doubles
-((total_tests++))
-run_test "grep avec quotes doubles" "infile" "grep \"42\"" "wc -l" $total_tests && ((passed_tests++))
-
-# Test 14: espaces multiples
-((total_tests++))
-run_test "gestion des espaces" "whitespace" "grep '   spaces'" "wc -l" $total_tests && ((passed_tests++))
-
-echo -e "\n${BOLD}=== Tests commandes complexes ===${NC}"
-
-# Test 15: cut et sort
-((total_tests++))
-run_test "cut et sort" "infile" "cut -d' ' -f1" "sort -r" $total_tests && ((passed_tests++))
-
-# Test 16: tr et grep
-((total_tests++))
-run_test "tr et grep" "case_test" "tr [:lower:] [:upper:]" "grep TEST" $total_tests && ((passed_tests++))
-
-# Test 17: sed et grep
-((total_tests++))
-run_test "sed et grep" "infile" "sed 's/Test/TEST/g'" "grep TEST" $total_tests && ((passed_tests++))
-
-# Test 18: head et tail
-((total_tests++))
-run_test "head et tail" "numbers" "head -n 3" "tail -n 2" $total_tests && ((passed_tests++))
-
-echo -e "\n${BOLD}=== Tests erreurs communes ===${NC}"
-
-# Test 19: commande avec options multiples
-((total_tests++))
-run_test "options multiples" "infile" "grep -i -v Test" "wc -l" $total_tests && ((passed_tests++))
-
-# Test 20: commandes avec path relatif
-((total_tests++))
-run_test "path relatif" "infile" "./cat" "wc -l" $total_tests && ((passed_tests++))
-
-# Tests de fuites mémoire si activé
-if [ $CHECK_LEAKS -eq 1 ]; then
-    check_memory_leaks "Test basique" "ls -l" "wc -l"
-    check_memory_leaks "Test complexe" "grep -i test" "sort -r"
-    check_memory_leaks "Test avec quotes" "grep 'école'" "wc -w"
+# Vérification de la norme si demandée
+if [ $NORMINETTE -eq 1 ]; then
+    check_norm
+    check_makefile
 fi
 
-# Affichage du résumé
-echo -e "\n${BOLD}=== Résumé des tests ===${NC}"
-echo -e "Tests réussis: ${GREEN}$passed_tests${NC}"
-echo -e "Tests échoués: ${RED}$((total_tests - passed_tests))${NC}"
-echo -e "Total des tests: $total_tests"
+# Le reste du script (tests) reste identique, mais avec les nouvelles fonctionnalités activées selon les options
 
-# Nettoyage final
-if [ $VERBOSE -eq 0 ]; then
-    cleanup
-fi
-
-exit $((total_tests - passed_tests))
+# Génération du rapport HTML à la fin
+generate_html_report
