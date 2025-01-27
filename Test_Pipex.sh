@@ -3,10 +3,11 @@
 # Couleurs pour l'affichage
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 BOLD='\033[1m'
 
-# Chemins
+# Chemins par défaut
 PIPEX="./output/pipex"
 BASH_OUTPUT="txt/test/bash"
 MAIN_OUTPUT="txt/test/main"
@@ -17,18 +18,53 @@ show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  -h, --help    Affiche ce message d'aide"
-    echo "  -v, --verbose Affiche plus de détails sur les tests"
+    echo "  -h, --help      Affiche ce message d'aide"
+    echo "  -v, --verbose   Affiche plus de détails sur les tests"
+    echo "  -i, --interactive   Mode interactif pour configurer les chemins"
     echo ""
     echo "Description:"
     echo "  Script de test pour le projet pipex qui compare les sorties"
     echo "  entre l'exécution bash standard et le programme pipex."
     echo ""
-    echo "Chemins utilisés:"
+    echo "Chemins par défaut:"
     echo "  Programme pipex: $PIPEX"
     echo "  Sorties bash: $BASH_OUTPUT"
     echo "  Sorties pipex: $MAIN_OUTPUT"
     exit 0
+}
+
+# Fonction pour le mode interactif
+configure_paths() {
+    echo -e "${BLUE}${BOLD}Configuration des chemins${NC}"
+    echo -e "${BOLD}Appuyez sur Entrée pour garder la valeur par défaut${NC}\n"
+
+    # Chemin du programme pipex
+    echo -e "Chemin actuel du programme pipex: ${BOLD}$PIPEX${NC}"
+    read -p "Nouveau chemin: " new_pipex
+    PIPEX=${new_pipex:-$PIPEX}
+
+    # Chemin des sorties bash
+    echo -e "\nChemin actuel des sorties bash: ${BOLD}$BASH_OUTPUT${NC}"
+    read -p "Nouveau chemin: " new_bash
+    BASH_OUTPUT=${new_bash:-$BASH_OUTPUT}
+
+    # Chemin des sorties pipex
+    echo -e "\nChemin actuel des sorties pipex: ${BOLD}$MAIN_OUTPUT${NC}"
+    read -p "Nouveau chemin: " new_main
+    MAIN_OUTPUT=${new_main:-$MAIN_OUTPUT}
+
+    # Chemin des fichiers d'entrée
+    echo -e "\nChemin actuel des fichiers d'entrée: ${BOLD}$INPUT_DIR${NC}"
+    read -p "Nouveau chemin: " new_input
+    INPUT_DIR=${new_input:-$INPUT_DIR}
+
+    echo -e "\n${BOLD}Configuration finale:${NC}"
+    echo "Programme pipex: $PIPEX"
+    echo "Sorties bash: $BASH_OUTPUT"
+    echo "Sorties pipex: $MAIN_OUTPUT"
+    echo "Fichiers d'entrée: $INPUT_DIR"
+
+    read -p "Appuyez sur Entrée pour continuer..."
 }
 
 # Traitement des arguments
@@ -40,6 +76,9 @@ for arg in "$@"; do
             ;;
         -v|--verbose)
             VERBOSE=1
+            ;;
+        -i|--interactive)
+            configure_paths
             ;;
     esac
 done
