@@ -66,7 +66,7 @@ case $OS in
         fi
         ;;
     "Linux")
-        LEAKS_CMD="valgrind --leak-check=full"
+        LEAKS_CMD="valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes"
         LEAKS_CHECK="definitely lost"
         ;;
     *)
