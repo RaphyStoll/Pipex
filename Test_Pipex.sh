@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Nettoyage du terminal
+clear
+
 # Couleurs pour l'affichage
 GREEN='\033[0;32m'
 RED='\033[0;31m'
