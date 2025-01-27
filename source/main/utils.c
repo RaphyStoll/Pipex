@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
+/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:10:20 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/27 11:49:11 by raphalme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void arg_verif(t_data *data, int argc, char **argv)
 	(void)argv;
 	if (argc != 5)
 		ft_exit_error(data, "Wrong number of arguments");
-	ft_printf(GREEN BOLD "Arguments are correct\n");
+	//ft_printf(GREEN BOLD "Arguments are correct\n");
 }
 void ft_exit_error(t_data *data, char *message)
 {

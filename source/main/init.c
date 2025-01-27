@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphael <raphael@student.42.fr>            +#+  +:+       +#+        */
+/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 22:29:08 by raphael          ###   ########.fr       */
+/*   Updated: 2025/01/27 11:49:01 by raphalme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2)
 	data->paths = \
 	"/bin/:/usr/bin/:/usr/local/bin/:/sbin/:/usr/sbin/:/usr/local/sbin/";
 	data->cmd_path = find_path(data, data->cmd1[0]);
-	print_struct(data);
+	//print_struct(data);
 	return (data);
 }
 
