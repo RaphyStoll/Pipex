@@ -1,4 +1,9 @@
+# redirect to the output folder
+#redirect to input and ouotput no permission file
+
 #!/bin/bash
+
+clear
 
 # Couleurs et styles
 BLACK='\033[0;30m'
@@ -32,6 +37,11 @@ INFILE_DIR="${TEST_DIR}/input"
 INFILE="${INFILE_DIR}/infile.txt"
 LEAKS_DIR="${TEST_DIR}/leaks"
 
+#variable pour le makefile
+MAKEFILE="Makefile"
+MANDATORY_RULES=("all" "clean" "fclean" "re")
+CHECK_MAKEFILE=true
+
 # Définition des tests avec des arrays associatifs multidimensionnels
 declare -A BASH_CMD
 declare -A CMD1
@@ -57,6 +67,26 @@ BASH_CMD[test_sort_uniq]="sort | uniq"
 CMD1[test_sort_uniq]="sort"
 CMD2[test_sort_uniq]="uniq"
 
+# Tests pour les erreurs de permission et de fichiers
+BASH_CMD[test_no_read_perm]="< ${INFILE_DIR}/no_read.txt cat | wc -l"
+CMD1[test_no_read_perm]="cat"
+CMD2[test_no_read_perm]="wc -l"
+
+BASH_CMD[test_no_write_perm]="< ${INFILE} cat | wc -l"
+CMD1[test_no_write_perm]="cat"
+CMD2[test_no_write_perm]="wc -l"
+
+BASH_CMD[test_nonexistent_infile]="< ${NONEXISTENT_FILE} cat | wc -l"
+CMD1[test_nonexistent_infile]="cat"
+CMD2[test_nonexistent_infile]="wc -l"
+
+BASH_CMD[test_invalid_cmd1]="< ${INFILE} invalid_command | wc -l"
+CMD1[test_invalid_cmd1]="invalid_command"
+CMD2[test_invalid_cmd1]="wc -l"
+
+BASH_CMD[test_invalid_cmd2]="< ${INFILE} cat | invalid_command"
+CMD1[test_invalid_cmd2]="cat"
+CMD2[test_invalid_cmd2]="invalid_command"
 
 # Détection de l'OS et configuration du leak checker
 OS=$(uname -s)
@@ -103,6 +133,9 @@ print_help() {
     echo -e "${GREEN}-c, --clean${NC}           Nettoie les fichiers de test avant de commencer"
     echo -e "${GREEN}-s, --specific${NC} TEST   Exécute uniquement le test spécifié"
     echo -e "${GREEN}-t, --timeout${NC} SEC     Définit le timeout des tests (défaut: 5s)"
+	echo -e "${GREEN}--no-makefile${NC}         Désactive la vérification du Makefile"
+
+
     echo -e "\n${BOLD}Tests disponibles:${NC}"
     for test_name in "${!BASH_CMD[@]}"; do
         echo -e "${CYAN}$test_name${NC}"
@@ -176,12 +209,104 @@ while [[ $# -gt 0 ]]; do
             fi
             shift
             ;;
+		--no-makefile)
+			CHECK_MAKEFILE=false
+			shift
+			;;
     esac
 done
+
+check_makefile() {
+    echo -e "\n${BOLD}=== Vérification du Makefile ===${NC}"
+    
+    # Vérification de l'existence du Makefile
+    if [ ! -f "$MAKEFILE" ]; then
+        echo -e "${RED}✗ Erreur: Makefile non trouvé${NC}"
+        return 1
+    else
+        echo -e "${GREEN}✓ Makefile trouvé${NC}"
+    fi
+
+    # Vérification des règles obligatoires
+    local missing_rules=0
+    for rule in "${MANDATORY_RULES[@]}"; do
+        if ! grep -q "^$rule:" "$MAKEFILE"; then
+            echo -e "${RED}✗ Règle '$rule' manquante${NC}"
+            ((missing_rules++))
+        else
+            echo -e "${GREEN}✓ Règle '$rule' présente${NC}"
+        fi
+    done
+
+    # Vérification des flags de compilation
+    if ! grep -q "\-Wall" "$MAKEFILE" || ! grep -q "\-Wextra" "$MAKEFILE" || ! grep -q "\-Werror" "$MAKEFILE"; then
+        echo -e "${RED}✗ Flags de compilation (-Wall -Wextra -Werror) manquants${NC}"
+        ((missing_rules++))
+    else
+        echo -e "${GREEN}✓ Flags de compilation présents${NC}"
+    fi
+
+    # Test des règles make
+    echo -e "\n${BOLD}Test des règles make :${NC}"
+    
+    # make clean
+    echo -e "\n${CYAN}Test de 'make clean'${NC}"
+    if make clean &>/dev/null; then
+        echo -e "${GREEN}✓ make clean réussi${NC}"
+    else
+        echo -e "${RED}✗ make clean a échoué${NC}"
+        ((missing_rules++))
+    fi
+
+    # make fclean
+    echo -e "\n${CYAN}Test de 'make fclean'${NC}"
+    if make fclean &>/dev/null; then
+        echo -e "${GREEN}✓ make fclean réussi${NC}"
+    else
+        echo -e "${RED}✗ make fclean a échoué${NC}"
+        ((missing_rules++))
+    fi
+
+    # make all
+    echo -e "\n${CYAN}Test de 'make all'${NC}"
+    if make all &>/dev/null; then
+        echo -e "${GREEN}✓ make all réussi${NC}"
+    else
+        echo -e "${RED}✗ make all a échoué${NC}"
+        ((missing_rules++))
+    fi
+
+    # make re
+    echo -e "\n${CYAN}Test de 'make re'${NC}"
+    if make re &>/dev/null; then
+        echo -e "${GREEN}✓ make re réussi${NC}"
+    else
+        echo -e "${RED}✗ make re a échoué${NC}"
+        ((missing_rules++))
+    fi
+
+    # Vérification de la recompilation (règle bonus)
+    echo -e "\n${CYAN}Test de la recompilation${NC}"
+    make all &>/dev/null
+    if make all &>/dev/null | grep -q "is up to date" || [ $? -eq 0 ]; then
+        echo -e "${GREEN}✓ La recompilation fonctionne correctement${NC}"
+    else
+        echo -e "${YELLOW}⚠ La recompilation pourrait être améliorée${NC}"
+    fi
+
+    if [ $missing_rules -eq 0 ]; then
+        echo -e "\n${GREEN}✓ Toutes les vérifications du Makefile sont passées${NC}"
+        return 0
+    else
+        echo -e "\n${RED}✗ Certaines vérifications du Makefile ont échoué${NC}"
+        return 1
+    fi
+}
 
 
 setup_test_env() {
     echo -e "${BOLD}Configuration de l'environnement de test...${NC}"
+	rm -rf ${TEST_DIR}
     mkdir -p "${BASH_DIR}" "${MAIN_DIR}" "${INFILE_DIR}"
     
     # Ne créer le fichier par défaut que si aucun fichier personnalisé n'est spécifié
@@ -195,6 +320,29 @@ Multiple spaces test
 Special chars: !@#$ %^&*
 EOF
     fi
+	setup_permission_tests
+}
+
+# Fonction pour créer les fichiers de test avec différentes permissions
+setup_permission_tests() {	
+
+    # Fichier sans permission de lecture
+    echo "Test content" > "${INFILE_DIR}/no_read.txt"
+    chmod 333 "${INFILE_DIR}/no_read.txt"
+
+    # Fichier sans permission d'écriture
+    echo "Test content" > "${INFILE_DIR}/no_write.txt"
+    chmod 444 "${INFILE_DIR}/no_write.txt"
+
+    # Créer un dossier sans permission
+    mkdir -p "${INFILE_DIR}/no_access_dir"
+    chmod 000 "${INFILE_DIR}/no_access_dir"
+
+	mkdir -p "${INFILE_DIR}/dir_output"
+    chmod 755 "${INFILE_DIR}/dir_output"
+
+    # Fichier qui n'existe pas (sera utilisé tel quel)
+    NONEXISTENT_FILE="${INFILE_DIR}/nonexistent.txt"
 }
 
 
@@ -202,12 +350,20 @@ EOF
 run_test() {
     local test_name="$1"
     local test_num="$2"
+
     if [ "$QUIET" = false ]; then
         printf "\n%s%s%s\n" "===================" " Test $test_num: $test_name " "==================="
     fi
+
+    # Configuration des fichiers de sortie
     local bash_out="${BASH_DIR}/test${test_num}.txt"
     local pipex_out="${MAIN_DIR}/test${test_num}.txt"
     local leaks_out="${LEAKS_DIR}/test${test_num}.txt"
+
+    # Si c'est un test de permission sur le fichier de sortie
+    if [ "$test_name" = "test_no_write_perm" ]; then
+        pipex_out="${INFILE_DIR}/no_write.txt"
+    fi
 
     if [ "$VERBOSE" = true ]; then
         echo -e "${CYAN}Détails du test:${NC}"
@@ -221,7 +377,7 @@ run_test() {
     fi
 
     # Exécution bash
-    eval "< $INFILE ${BASH_CMD[$test_name]} > $bash_out"
+    eval "< $INFILE ${BASH_CMD[$test_name]} > $bash_out" 2>/dev/null
     local bash_status=$?
 
     # Exécution pipex avec ou sans leaks
@@ -248,7 +404,7 @@ run_test() {
             if [ "$QUIET" = false ]; then
                 echo -e "${RED}La détection de leaks n'est pas disponible sur cet OS${NC}"
             fi
-            timeout $TEST_TIMEOUT $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out"
+            timeout $TEST_TIMEOUT $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out" 2>/dev/null
             local pipex_status=$?
             if [ $pipex_status -eq 124 ]; then
                 echo -e "${RED}✗ Test échoué - Timeout après $TEST_TIMEOUT secondes${NC}"
@@ -257,7 +413,7 @@ run_test() {
             fi
         fi
     else
-        timeout $TEST_TIMEOUT $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out"
+        timeout $TEST_TIMEOUT $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out" 2>/dev/null
         local pipex_status=$?
         if [ $pipex_status -eq 124 ]; then
             echo -e "${RED}✗ Test échoué - Timeout après $TEST_TIMEOUT secondes${NC}"
@@ -267,6 +423,32 @@ run_test() {
     fi
 
     ((TOTAL_TESTS++))
+
+    # Gestion spéciale pour les tests d'erreur
+    case "$test_name" in
+        test_no_read_perm|test_no_write_perm|test_nonexistent_infile|test_invalid_cmd*)
+            if [ $pipex_status -eq $bash_status ]; then
+                if [ "$QUIET" = false ]; then
+                    echo -e "${GREEN}✓ Test réussi - Code d'erreur correct ($pipex_status)${NC}"
+                fi
+                ((PASSED_TESTS++))
+            else
+                if [ "$QUIET" = false ]; then
+                    echo -e "${RED}✗ Test échoué - Code d'erreur incorrect (attendu: $bash_status, reçu: $pipex_status)${NC}"
+                    if [ "$VERBOSE" = true ]; then
+                        echo -e "${YELLOW}Sortie d'erreur bash:${NC}"
+                        eval "< $INFILE ${BASH_CMD[$test_name]} > $bash_out" 2>&1
+                        echo -e "${YELLOW}Sortie d'erreur pipex:${NC}"
+                        $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out" 2>&1
+                    fi
+                fi
+                ((FAILED_TESTS++))
+            fi
+            return
+            ;;
+    esac
+
+    # Tests normaux
     if [ -f "$pipex_out" ]; then
         if diff "$bash_out" "$pipex_out" > /dev/null; then
             if [ "$QUIET" = false ]; then
@@ -298,7 +480,29 @@ run_test() {
     fi
 }
 
-# Dans la boucle principale
+# Vérification de l'existence de pipex
+if [ ! -f "$PIPEX" ]; then
+    echo -e "${RED}Erreur: pipex non trouvé dans $PIPEX${NC}"
+    exit 1
+fi
+
+# Initialisation
+setup_test_env
+
+#verification du makefile
+if [ "$CHECK_MAKEFILE" = true ]; then
+    check_makefile
+    if [ $? -ne 0 ] && [ "$QUIET" = false ]; then
+        echo -e "${YELLOW}⚠ Attention: Problèmes détectés dans le Makefile${NC}"
+        read -p "Voulez-vous continuer les tests? (o/n) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Oo]$ ]]; then
+            exit 1
+        fi
+    fi
+fi
+
+# Exécution des tests
 if [ -n "$SPECIFIC_TEST" ]; then
     run_test "$SPECIFIC_TEST" "01"
 else
@@ -313,33 +517,13 @@ else
     done
 fi
 
-
-
-# Vérification de l'existence de pipex
-if [ ! -f "$PIPEX" ]; then
-    echo -e "${RED}Erreur: pipex non trouvé dans $PIPEX${NC}"
-    exit 1
-fi
-
-# Initialisation
-setup_test_env
-
-# Exécution des tests
-test_num=1
-for test_name in "${!BASH_CMD[@]}"; do
-    run_test "$test_name" $(printf "%02d" $test_num)
-    ((test_num++))
-done
-
 # Affichage du résumé
 echo -e "\n${BOLD}=== Résumé des Tests ===${NC}"
 echo -e "${GREEN}Tests réussis: $PASSED_TESTS/$TOTAL_TESTS ${NC}"
 echo -e "${RED}Tests échoués: $FAILED_TESTS/$TOTAL_TESTS ${NC}"
-
 if [ $TOTAL_TESTS -eq 0 ]; then
     echo -e "${BLUE}Pourcentage de réussite: 0%${NC}"
 else
     echo -e "${BLUE}Pourcentage de réussite: $(( (PASSED_TESTS * 100) / TOTAL_TESTS ))%${NC}"
 fi
-
 echo -e "\n${BOLD}Tests terminés${NC}"
