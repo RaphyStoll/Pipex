@@ -115,11 +115,16 @@ configure_paths() {
     read -p "Nouveau chemin: " new_input
     INPUT_DIR=${new_input:-$INPUT_DIR}
 
+    echo -e "\nChemin actuel des rapports de fuites: ${BOLD}$LEAKS_DIR${NC}"
+    read -p "Nouveau chemin: " new_leaks
+    LEAKS_DIR=${new_leaks:-$LEAKS_DIR}
+
     echo -e "\n${BOLD}Configuration finale:${NC}"
     echo "Programme pipex: $PIPEX"
     echo "Sorties bash: $BASH_OUTPUT"
     echo "Sorties pipex: $MAIN_OUTPUT"
     echo "Fichiers d'entrée: $INPUT_DIR"
+    echo "Rapports de fuites: $LEAKS_DIR"
 
     read -p "Appuyez sur Entrée pour continuer..."
 }
