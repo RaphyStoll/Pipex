@@ -21,7 +21,7 @@ VERBOSE=false
 QUIET=false
 CUSTOM_INFILE=""
 SPECIFIC_TEST=""
-TEST_TIMEOUT=5 # 5 secondes par default
+TEST_TIMEOUT=5 #5 secondes par default
 
 # Configuration des chemins
 PIPEX="./output/pipex"
@@ -139,7 +139,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -f|--file)
             if [ -f "$2" ]; then
-                CUSTOM_INFILE="$2"
+                INFILE="$2"
                 shift 2
             else
                 echo -e "${RED}Erreur: Le fichier $2 n'existe pas${NC}"
@@ -181,10 +181,12 @@ done
 
 
 setup_test_env() {
-    echo -e "${YELLOW} ${BOLD}Configuration de l'environnement de test...${NC}"
-    mkdir -p "${BASH_DIR}" "${MAIN_DIR}" "${INFILE_DIR}" "${LEAKS_DIR}"
+    echo -e "${BOLD}Configuration de l'environnement de test...${NC}"
+    mkdir -p "${BASH_DIR}" "${MAIN_DIR}" "${INFILE_DIR}"
     
-    cat > "$INFILE" << EOF
+    # Ne créer le fichier par défaut que si aucun fichier personnalisé n'est spécifié
+    if [ "$INFILE" = "${INFILE_DIR}/infile.txt" ]; then
+        cat > "$INFILE" << EOF
 Hello World
 This is a test file
 42 School is amazing
@@ -192,6 +194,7 @@ Testing pipex project
 Multiple spaces test
 Special chars: !@#$ %^&*
 EOF
+    fi
 }
 
 
