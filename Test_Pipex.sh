@@ -25,6 +25,72 @@ CHECK_LEAKS=0
 # Détection de l'OS
 OS=$(uname -s)
 
+# Fonction pour nettoyer les fichiers de test
+cleanup() {
+    rm -f "$INPUT_DIR/infile"
+    rm -f "$INPUT_DIR/numbers"
+    rm -f "$INPUT_DIR/case_test"
+    rm -f "$INPUT_DIR/whitespace"
+}
+
+# Fonction d'aide
+show_help() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help         Affiche ce message d'aide"
+    echo "  -v, --verbose      Affiche plus de détails sur les tests"
+    echo "  -i, --interactive  Mode interactif pour configurer les chemins"
+    echo "  -l, --leaks        Active la vérification des fuites mémoire"
+    echo ""
+    echo "Description:"
+    echo "  Script de test pour le projet pipex qui compare les sorties"
+    echo "  entre l'exécution bash standard et le programme pipex."
+    echo ""
+    echo "Chemins par défaut:"
+    echo "  Programme pipex: $PIPEX"
+    echo "  Sorties bash: $BASH_OUTPUT"
+    echo "  Sorties pipex: $MAIN_OUTPUT"
+    echo "  Fichiers d'entrée: $INPUT_DIR"
+    echo "  Rapports de fuites: $LEAKS_DIR"
+    exit 0
+}
+
+# Fonction pour le mode interactif
+configure_paths() {
+    echo -e "${BLUE}${BOLD}Configuration des chemins${NC}"
+    echo -e "${BOLD}Appuyez sur Entrée pour garder la valeur par défaut${NC}\n"
+
+    echo -e "Chemin actuel du programme pipex: ${BOLD}$PIPEX${NC}"
+    read -p "Nouveau chemin: " new_pipex
+    PIPEX=${new_pipex:-$PIPEX}
+
+    echo -e "\nChemin actuel des sorties bash: ${BOLD}$BASH_OUTPUT${NC}"
+    read -p "Nouveau chemin: " new_bash
+    BASH_OUTPUT=${new_bash:-$BASH_OUTPUT}
+
+    echo -e "\nChemin actuel des sorties pipex: ${BOLD}$MAIN_OUTPUT${NC}"
+    read -p "Nouveau chemin: " new_main
+    MAIN_OUTPUT=${new_main:-$MAIN_OUTPUT}
+
+    echo -e "\nChemin actuel des fichiers d'entrée: ${BOLD}$INPUT_DIR${NC}"
+    read -p "Nouveau chemin: " new_input
+    INPUT_DIR=${new_input:-$INPUT_DIR}
+
+    echo -e "\nChemin actuel des rapports de fuites: ${BOLD}$LEAKS_DIR${NC}"
+    read -p "Nouveau chemin: " new_leaks
+    LEAKS_DIR=${new_leaks:-$LEAKS_DIR}
+
+    echo -e "\n${BOLD}Configuration finale:${NC}"
+    echo "Programme pipex: $PIPEX"
+    echo "Sorties bash: $BASH_OUTPUT"
+    echo "Sorties pipex: $MAIN_OUTPUT"
+    echo "Fichiers d'entrée: $INPUT_DIR"
+    echo "Rapports de fuites: $LEAKS_DIR"
+
+    read -p "Appuyez sur Entrée pour continuer..."
+}
+
 # Fonction pour tester les leaks selon l'OS
 check_memory_leaks() {
     local test_name=$1
@@ -73,60 +139,38 @@ check_memory_leaks() {
     esac
 }
 
-# Fonction d'aide
-show_help() {
-    echo "Usage: $0 [OPTIONS]"
-    echo ""
-    echo "Options:"
-    echo "  -h, --help         Affiche ce message d'aide"
-    echo "  -v, --verbose      Affiche plus de détails sur les tests"
-    echo "  -i, --interactive  Mode interactif pour configurer les chemins"
-    echo "  -l, --leaks        Active la vérification des fuites mémoire"
-    echo ""
-    echo "Description:"
-    echo "  Script de test pour le projet pipex qui compare les sorties"
-    echo "  entre l'exécution bash standard et le programme pipex."
-    echo ""
-    echo "Chemins par défaut:"
-    echo "  Programme pipex: $PIPEX"
-    echo "  Sorties bash: $BASH_OUTPUT"
-    echo "  Sorties pipex: $MAIN_OUTPUT"
-    exit 0
-}
-
-# Fonction pour le mode interactif
-configure_paths() {
-    echo -e "${BLUE}${BOLD}Configuration des chemins${NC}"
-    echo -e "${BOLD}Appuyez sur Entrée pour garder la valeur par défaut${NC}\n"
-
-    echo -e "Chemin actuel du programme pipex: ${BOLD}$PIPEX${NC}"
-    read -p "Nouveau chemin: " new_pipex
-    PIPEX=${new_pipex:-$PIPEX}
-
-    echo -e "\nChemin actuel des sorties bash: ${BOLD}$BASH_OUTPUT${NC}"
-    read -p "Nouveau chemin: " new_bash
-    BASH_OUTPUT=${new_bash:-$BASH_OUTPUT}
-
-    echo -e "\nChemin actuel des sorties pipex: ${BOLD}$MAIN_OUTPUT${NC}"
-    read -p "Nouveau chemin: " new_main
-    MAIN_OUTPUT=${new_main:-$MAIN_OUTPUT}
-
-    echo -e "\nChemin actuel des fichiers d'entrée: ${BOLD}$INPUT_DIR${NC}"
-    read -p "Nouveau chemin: " new_input
-    INPUT_DIR=${new_input:-$INPUT_DIR}
-
-    echo -e "\nChemin actuel des rapports de fuites: ${BOLD}$LEAKS_DIR${NC}"
-    read -p "Nouveau chemin: " new_leaks
-    LEAKS_DIR=${new_leaks:-$LEAKS_DIR}
-
-    echo -e "\n${BOLD}Configuration finale:${NC}"
-    echo "Programme pipex: $PIPEX"
-    echo "Sorties bash: $BASH_OUTPUT"
-    echo "Sorties pipex: $MAIN_OUTPUT"
-    echo "Fichiers d'entrée: $INPUT_DIR"
-    echo "Rapports de fuites: $LEAKS_DIR"
-
-    read -p "Appuyez sur Entrée pour continuer..."
+# Fonction pour exécuter un test et comparer les résultats
+run_test() {
+    local test_name=$1
+    local input_file=$2
+    local cmd1=$3
+    local cmd2=$4
+    local test_num=$5
+    
+    echo -e "\n${BOLD}Test $test_num: $test_name${NC}"
+    
+    if [ $VERBOSE -eq 1 ]; then
+        echo "Commandes: $cmd1 | $cmd2"
+    fi
+    
+    # Exécution avec bash
+    < "$INPUT_DIR/$input_file" $cmd1 | $cmd2 > "$BASH_OUTPUT/test${test_num}"
+    
+    # Exécution avec pipex
+    $PIPEX "$INPUT_DIR/$input_file" "$cmd1" "$cmd2" "$MAIN_OUTPUT/test${test_num}"
+    
+    # Comparaison des résultats
+    if diff "$BASH_OUTPUT/test${test_num}" "$MAIN_OUTPUT/test${test_num}" >/dev/null ; then
+        echo -e "${GREEN}✓ Test réussi${NC}"
+        return 0
+    else
+        echo -e "${RED}✗ Test échoué${NC}"
+        if [ $VERBOSE -eq 1 ]; then
+            echo "Différences trouvées:"
+            diff "$BASH_OUTPUT/test${test_num}" "$MAIN_OUTPUT/test${test_num}"
+        fi
+        return 1
+    fi
 }
 
 # Traitement des arguments
@@ -147,13 +191,50 @@ for arg in "$@"; do
     esac
 done
 
-[Le reste du script reste identique jusqu'à la partie des tests]
+# Vérification de l'existence du programme
+if [ ! -f "$PIPEX" ]; then
+    echo -e "${RED}Erreur: Le programme pipex n'existe pas dans $PIPEX${NC}"
+    exit 1
+fi
 
-# Après chaque test, si CHECK_LEAKS est activé
+# Création des dossiers nécessaires
+mkdir -p "$BASH_OUTPUT" "$MAIN_OUTPUT" "$INPUT_DIR"
+
+# Initialisation du compteur de tests
+total_tests=0
+passed_tests=0
+
+# Création des fichiers de test
+echo -e "Hello World\nTest ligne 2\n42 école\nBonjour le monde\nTest\n42\nÉcole 42\n" > "$INPUT_DIR/infile"
+echo -e "123\n456\n789\n123\n456\n" > "$INPUT_DIR/numbers"
+echo -e "TEST\ntest\nTeSt\nTEST\ntest\n" > "$INPUT_DIR/case_test"
+echo -e "   spaces   \ntabs\t\t\nlines\n\n\nend" > "$INPUT_DIR/whitespace"
+
+# Liste des tests
+echo -e "${BOLD}=== Tests basiques ===${NC}"
+
+# Test 1: ls et wc
+((total_tests++))
+run_test "ls et wc" "infile" "ls -l" "wc -l" $total_tests && ((passed_tests++))
+
+# [Ajoutez ici tous les autres tests comme dans la version précédente]
+
+# Tests de fuites mémoire si activé
 if [ $CHECK_LEAKS -eq 1 ]; then
     check_memory_leaks "Test basique" "ls -l" "wc -l"
     check_memory_leaks "Test complexe" "grep -i test" "sort -r"
     check_memory_leaks "Test avec quotes" "grep 'école'" "wc -w"
 fi
 
-[Le reste du script reste identique]
+# Affichage du résumé
+echo -e "\n${BOLD}=== Résumé des tests ===${NC}"
+echo -e "Tests réussis: ${GREEN}$passed_tests${NC}"
+echo -e "Tests échoués: ${RED}$((total_tests - passed_tests))${NC}"
+echo -e "Total des tests: $total_tests"
+
+# Nettoyage final
+if [ $VERBOSE -eq 0 ]; then
+    cleanup
+fi
+
+exit $((total_tests - passed_tests))
