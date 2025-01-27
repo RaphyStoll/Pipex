@@ -17,6 +17,11 @@ TOTAL_TESTS=0
 PASSED_TESTS=0
 FAILED_TESTS=0
 CHECK_LEAKS=false
+VERBOSE=false
+QUIET=false
+CUSTOM_INFILE=""
+SPECIFIC_TEST=""
+TEST_TIMEOUT=5 # 5 secondes par default
 
 # Configuration des chemins
 PIPEX="./output/pipex"
@@ -80,7 +85,7 @@ esac
 
 # print l'aide
 print_help() {
-    echo -e "${BOLD}Usage:${NC} $0 [${GREEN}-h${NC}|${GREEN}--help${NC}] [${GREEN}-l${NC}|${GREEN}--leaks${NC}]"
+    echo -e "${BOLD}Usage:${NC} $0 [OPTIONS]"
     echo -e "\n${BOLD}Description:${NC}"
     echo "Script de test pour le projet pipex de 42"
     echo -e "\n${BOLD}OS détecté:${NC} ${CYAN}$OS${NC}"
@@ -90,14 +95,25 @@ print_help() {
         echo -e "${RED}Attention: Détection de leaks non disponible sur cet OS${NC}"
     fi
     echo -e "\n${BOLD}Options:${NC}"
-    echo -e "${GREEN}-h, --help${NC}     Affiche cette aide"
-    echo -e "${GREEN}-l, --leaks${NC}    Lance les tests avec la vérification des leaks"
+    echo -e "${GREEN}-h, --help${NC}            Affiche cette aide"
+    echo -e "${GREEN}-l, --leaks${NC}           Lance les tests avec la vérification des leaks"
+    echo -e "${GREEN}-v, --verbose${NC}         Mode verbeux - affiche plus de détails"
+    echo -e "${GREEN}-q, --quiet${NC}           Mode silencieux - n'affiche que le résumé"
+    echo -e "${GREEN}-f, --file${NC} FILE       Utilise FILE comme fichier d'entrée"
+    echo -e "${GREEN}-c, --clean${NC}           Nettoie les fichiers de test avant de commencer"
+    echo -e "${GREEN}-s, --specific${NC} TEST   Exécute uniquement le test spécifié"
+    echo -e "${GREEN}-t, --timeout${NC} SEC     Définit le timeout des tests (défaut: 5s)"
     echo -e "\n${BOLD}Tests disponibles:${NC}"
     for test_name in "${!BASH_CMD[@]}"; do
         echo -e "${CYAN}$test_name${NC}"
         echo -e "└─ Commande: ${BASH_CMD[$test_name]}"
     done
     exit 0
+}
+
+clean_test_files() {
+    echo -e "${YELLOW}Nettoyage des fichiers de test...${NC}"
+    rm -rf "${BASH_DIR}"/* "${MAIN_DIR}"/* "${LEAKS_DIR}"/*
 }
 
 # Gestion des options
@@ -110,6 +126,47 @@ while [[ $# -gt 0 ]]; do
         -l|--leaks)
             CHECK_LEAKS=true
             shift
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            QUIET=false
+            shift
+            ;;
+        -q|--quiet)
+            QUIET=true
+            VERBOSE=false
+            shift
+            ;;
+        -f|--file)
+            if [ -f "$2" ]; then
+                CUSTOM_INFILE="$2"
+                shift 2
+            else
+                echo -e "${RED}Erreur: Le fichier $2 n'existe pas${NC}"
+                exit 1
+            fi
+            ;;
+        -c|--clean)
+            clean_test_files
+            shift
+            ;;
+        -s|--specific)
+            if [ -n "${BASH_CMD[$2]}" ]; then
+                SPECIFIC_TEST="$2"
+                shift 2
+            else
+                echo -e "${RED}Erreur: Test '$2' non trouvé${NC}"
+                exit 1
+            fi
+            ;;
+        -t|--timeout)
+            if [[ "$2" =~ ^[0-9]+$ ]]; then
+                TEST_TIMEOUT="$2"
+                shift 2
+            else
+                echo -e "${RED}Erreur: Le timeout doit être un nombre${NC}"
+                exit 1
+            fi
             ;;
         *)
             if [[ $1 == -* ]]; then
@@ -142,12 +199,23 @@ EOF
 run_test() {
     local test_name="$1"
     local test_num="$2"
-    printf "\n%s%s%s\n" "===================" " Test $test_num: $test_name " "==================="
+    if [ "$QUIET" = false ]; then
+        printf "\n%s%s%s\n" "===================" " Test $test_num: $test_name " "==================="
+    fi
     local bash_out="${BASH_DIR}/test${test_num}.txt"
     local pipex_out="${MAIN_DIR}/test${test_num}.txt"
     local leaks_out="${LEAKS_DIR}/test${test_num}.txt"
 
-    echo -e "${CYAN}Test de: $PIPEX $INFILE \"${CMD1[$test_name]}\" \"${CMD2[$test_name]}\" $pipex_out${NC}"
+    if [ "$VERBOSE" = true ]; then
+        echo -e "${CYAN}Détails du test:${NC}"
+        echo -e "└─ Fichier d'entrée: $INFILE"
+        echo -e "└─ Commande bash: ${BASH_CMD[$test_name]}"
+        echo -e "└─ Commande 1: ${CMD1[$test_name]}"
+        echo -e "└─ Commande 2: ${CMD2[$test_name]}"
+        echo -e "└─ Fichier de sortie: $pipex_out"
+    elif [ "$QUIET" = false ]; then
+        echo -e "${CYAN}Test de: $PIPEX $INFILE \"${CMD1[$test_name]}\" \"${CMD2[$test_name]}\" $pipex_out${NC}"
+    fi
 
     # Exécution bash
     eval "< $INFILE ${BASH_CMD[$test_name]} > $bash_out"
@@ -156,45 +224,92 @@ run_test() {
     # Exécution pipex avec ou sans leaks
     if [ "$CHECK_LEAKS" = true ]; then
         if [ -n "$LEAKS_CMD" ]; then
-            echo -e "${YELLOW}Vérification des leaks...${NC}"
-            $LEAKS_CMD $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out" &> "$leaks_out"
+            if [ "$QUIET" = false ]; then
+                echo -e "${YELLOW}Vérification des leaks...${NC}"
+            fi
+            timeout $TEST_TIMEOUT $LEAKS_CMD $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out" &> "$leaks_out"
             local pipex_status=$?
+            if [ $pipex_status -eq 124 ]; then
+                echo -e "${RED}✗ Test échoué - Timeout après $TEST_TIMEOUT secondes${NC}"
+                ((FAILED_TESTS++))
+                return
+            fi
             if grep -q "$LEAKS_CHECK" "$leaks_out"; then
-                echo -e "${RED}Leaks détectés ! Voir $leaks_out pour plus de détails${NC}"
-            else
+                if [ "$QUIET" = false ]; then
+                    echo -e "${RED}Leaks détectés ! Voir $leaks_out pour plus de détails${NC}"
+                fi
+            elif [ "$QUIET" = false ]; then
                 echo -e "${GREEN}Aucun leak détecté${NC}"
             fi
         else
-            echo -e "${RED}La détection de leaks n'est pas disponible sur cet OS${NC}"
-            $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out"
+            if [ "$QUIET" = false ]; then
+                echo -e "${RED}La détection de leaks n'est pas disponible sur cet OS${NC}"
+            fi
+            timeout $TEST_TIMEOUT $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out"
             local pipex_status=$?
+            if [ $pipex_status -eq 124 ]; then
+                echo -e "${RED}✗ Test échoué - Timeout après $TEST_TIMEOUT secondes${NC}"
+                ((FAILED_TESTS++))
+                return
+            fi
         fi
     else
-        $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out"
+        timeout $TEST_TIMEOUT $PIPEX "$INFILE" "${CMD1[$test_name]}" "${CMD2[$test_name]}" "$pipex_out"
         local pipex_status=$?
+        if [ $pipex_status -eq 124 ]; then
+            echo -e "${RED}✗ Test échoué - Timeout après $TEST_TIMEOUT secondes${NC}"
+            ((FAILED_TESTS++))
+            return
+        fi
     fi
 
     ((TOTAL_TESTS++))
     if [ -f "$pipex_out" ]; then
         if diff "$bash_out" "$pipex_out" > /dev/null; then
-            echo -e "${GREEN}✓ Test réussi${NC}"
+            if [ "$QUIET" = false ]; then
+                echo -e "${GREEN}✓ Test réussi${NC}"
+            fi
             ((PASSED_TESTS++))
-            if [ $bash_status -eq $pipex_status ]; then
-                echo -e "${GREEN}└─ Status de sortie correct ($pipex_status)${NC}"
-            else
-                echo -e "${YELLOW}└─ Status de sortie différent (bash: $bash_status, pipex: $pipex_status)${NC}"
+            if [ "$VERBOSE" = true ]; then
+                if [ $bash_status -eq $pipex_status ]; then
+                    echo -e "${GREEN}└─ Status de sortie correct ($pipex_status)${NC}"
+                else
+                    echo -e "${YELLOW}└─ Status de sortie différent (bash: $bash_status, pipex: $pipex_status)${NC}"
+                fi
             fi
         else
-            echo -e "${RED}✗ Test échoué - Sortie différente${NC}"
+            if [ "$QUIET" = false ]; then
+                echo -e "${RED}✗ Test échoué - Sortie différente${NC}"
+                if [ "$VERBOSE" = true ]; then
+                    echo -e "${YELLOW}Différences :${NC}"
+                    diff "$bash_out" "$pipex_out"
+                fi
+            fi
             ((FAILED_TESTS++))
-            echo -e "${YELLOW}Différences :${NC}"
-            diff "$bash_out" "$pipex_out"
         fi
     else
-        echo -e "${RED}✗ Test échoué - Fichier de sortie non créé${NC}"
+        if [ "$QUIET" = false ]; then
+            echo -e "${RED}✗ Test échoué - Fichier de sortie non créé${NC}"
+        fi
         ((FAILED_TESTS++))
     fi
 }
+
+# Dans la boucle principale
+if [ -n "$SPECIFIC_TEST" ]; then
+    run_test "$SPECIFIC_TEST" "01"
+else
+    test_num=1
+    for test_name in "${!BASH_CMD[@]}"; do
+        if [ "$QUIET" = false ]; then
+            run_test "$test_name" $(printf "%02d" $test_num)
+        else
+            run_test "$test_name" $(printf "%02d" $test_num) > /dev/null
+        fi
+        ((test_num++))
+    done
+fi
+
 
 
 # Vérification de l'existence de pipex
