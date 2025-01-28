@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   struct.h                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
+/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:30 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 16:09:41 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/28 17:34:58 by raphalme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ typedef struct s_data
 	int		fd_pipe[2];
 	char	**cmd1;
 	char	**cmd2;
+	char 	*file1;
+	char 	*file2;
 	char	*paths;
 	char	*cmd_path;
 	char 	*cmd_path2;

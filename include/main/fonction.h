@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fonction.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphael <raphael@student.42.fr>            +#+  +:+       +#+        */
+/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/26 22:09:54 by raphael          ###   ########.fr       */
+/*   Updated: 2025/01/28 17:13:31 by raphalme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,11 @@
 #include <sys/wait.h>
 #include <stdio.h>
 
-//!int main
+//! int main
 int main(int argc, char **argv);
+
+//! parsing
+void	run_pipe(t_data *data);
 
 //! utils
 void	arg_verif(t_data *data, int argc, char **argv);
@@ -40,6 +43,8 @@ void	free_array(char **array);
 //! init
 t_data	*init_data(t_data *data, char **argv);
 t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2);
+char *get_cmd_path(t_data *data, char *cmd);
+int open_files(t_data *data, char *infile, char *outfile);
 void	default_init(t_data *data);
 
 //! split

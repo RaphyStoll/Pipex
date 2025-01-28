@@ -6,7 +6,7 @@
 /*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/27 11:49:11 by raphalme         ###   ########.fr       */
+/*   Updated: 2025/01/28 16:05:50 by raphalme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@ void arg_verif(t_data *data, int argc, char **argv)
 void ft_exit_error(t_data *data, char *message)
 {
 	free_all(data);
-	ft_printf(RED BOLD"ERROR\n");
-	ft_printf(YELLOW "%s\n", message);
-	exit(0);
+	(void)message;
+	perror(RED BOLD"Error");
+	exit(1);
 }
 
 void printf_struct(t_data *data)

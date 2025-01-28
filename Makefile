@@ -59,8 +59,9 @@ MAIN_SRC = \
 	ft_split \
 	lib \
 	init \
-	noyaux \
-	free
+	parsing \
+	free \
+	debbug
 
 # Liste complète des sources principales
 MAIN_SRCS = $(addprefix $(MAIN_DIR)/, $(addsuffix .c, $(MAIN_SRC)))
