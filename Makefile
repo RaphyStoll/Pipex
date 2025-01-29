@@ -59,7 +59,7 @@ MAIN_SRC = \
 	ft_split \
 	lib \
 	init \
-	parsing \
+	run_pipe \
 	free \
 	debbug
 
@@ -143,6 +143,9 @@ $(GNL_LIB):
 # Nettoyage
 # ------------------------------------------------------------------------------
 clean:
+	@echo "$(RED)→ Cleaning ft_printf and gnl libraries...$(RESET)"
+	@$(MAKE) -C $(FT_PRINTF_DIR) fclean
+	@$(MAKE) -C $(GNL_DIR) fclean
 	@echo "$(RED)→ Removing object files...$(RESET)"
 	$(RM) $(MAIN_OBJS) $(BONUS_OBJS)
 	@echo "$(RED)→ Removing '$(OBJ_DIR)' directory...$(RESET)"
@@ -151,11 +154,6 @@ clean:
 fclean: clean
 	@echo "$(RED)→ Removing executables...$(RESET)"
 	$(RM) $(NAME) $(NAME_BONUS)
-
-cleanall: fclean
-	@echo "$(RED)→ Cleaning ft_printf and gnl libraries...$(RESET)"
-	@$(MAKE) -C $(FT_PRINTF_DIR) fclean
-	@$(MAKE) -C $(GNL_DIR) fclean
 
 re: fclean all
 

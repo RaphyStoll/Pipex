@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   init.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
+/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/28 17:42:03 by raphalme         ###   ########.fr       */
+/*   Updated: 2025/01/28 21:18:20 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,8 @@ t_data	*init_data(t_data *data, char **argv)
 	default_init(data);
 	if (pipe(data->fd_pipe) == -1)
 		ft_exit_error(data, "Pipe failed");
-	
+	data->file1 = argv[1];
+	data->file2 = argv[4];
 	data = parse_cmd(data, argv[2], argv[3]);
 	return (data);
 }
@@ -39,6 +40,8 @@ t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2)
 	}
 	data->paths = \
 	"/bin/:/usr/bin/:/usr/local/bin/:/sbin/:/usr/sbin/:/usr/local/sbin/";
+	
+	
 	//data->cmd_path = find_path(data, data->cmd1[0]);
 	//print_struct(data);
 	return (data);

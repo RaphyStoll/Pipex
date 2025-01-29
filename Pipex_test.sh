@@ -145,7 +145,9 @@ print_help() {
 }
 
 clean_test_files() {
+	make clean
     echo -e "${YELLOW}Nettoyage des fichiers de test...${NC}"
+	chmod 777 "${INFILE_DIR}"/*
     rm -rf "${BASH_DIR}"/* "${MAIN_DIR}"/* "${LEAKS_DIR}"/*
 }
 

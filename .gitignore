@@ -11,3 +11,4 @@ a.out
 *.swp
 *.txt
 test/*
+test.c

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   fonction.h                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
+/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/28 17:13:31 by raphalme         ###   ########.fr       */
+/*   Updated: 2025/01/28 21:46:36 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,12 @@
 #include <stdio.h>
 
 //! int main
-int main(int argc, char **argv);
+int		main(int argc, char **argv, char **envp);
 
-//! parsing
+//! run_pipe
 void	run_pipe(t_data *data);
+void	child1(t_data *data);
+void	child2(t_data *data);
 
 //! utils
 void	arg_verif(t_data *data, int argc, char **argv);
@@ -43,8 +45,8 @@ void	free_array(char **array);
 //! init
 t_data	*init_data(t_data *data, char **argv);
 t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2);
-char *get_cmd_path(t_data *data, char *cmd);
-int open_files(t_data *data, char *infile, char *outfile);
+char	*get_cmd_path(t_data *data, char *cmd);
+int		open_files(t_data *data, char *infile, char *outfile);
 void	default_init(t_data *data);
 
 //! split
@@ -64,4 +66,5 @@ char 	*find_path(t_data *data, char *cmd);
 
 //! debug
 void	print_struct(t_data *data);
+
 #endif

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   utils.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: raphalme <raphalme@student.42.fr>          +#+  +:+       +#+        */
+/*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/28 16:05:50 by raphalme         ###   ########.fr       */
+/*   Updated: 2025/01/28 21:58:03 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,8 @@ void arg_verif(t_data *data, int argc, char **argv)
 void ft_exit_error(t_data *data, char *message)
 {
 	free_all(data);
-	(void)message;
 	perror(RED BOLD"Error");
+	ft_printf(YELLOW"%s\n", message);
 	exit(1);
 }
 
