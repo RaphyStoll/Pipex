@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/28 21:46:36 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/29 13:51:29 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void	child2(t_data *data);
 
 //! utils
 void	arg_verif(t_data *data, int argc, char **argv);
-void	ft_exit_error(t_data *data, char *message);
+void	ft_exit_error(t_data *data, char *message, t_error error_code);
 void	printf_struct(t_data *data);
 char	*ft_strjoin(char const *s1, char const *s2);
 
