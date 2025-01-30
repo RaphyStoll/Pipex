@@ -6,12 +6,11 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 15:49:56 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/29 14:05:11 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/30 06:57:29 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/main/fonction.h"
-
 
 t_data	*init_data(t_data *data, char **argv)
 {
@@ -40,21 +39,17 @@ t_data	*parse_cmd(t_data *data, char *cmd1, char *cmd2)
 	}
 	data->paths = \
 	"/bin/:/usr/bin/:/usr/local/bin/:/sbin/:/usr/sbin/:/usr/local/sbin/";
-	
-	
-	//data->cmd_path = find_path(data, data->cmd1[0]);
-	//print_struct(data);
 	return (data);
 }
 
-
-char *get_cmd_path(t_data *data, char *cmd)
+char	*get_cmd_path(t_data *data, char *cmd)
 {
 	char	**cmd_paths;
 	int		i;
 	char	*tmp;
+
 	if (access(data->cmd1[0], X_OK) == 0)
-			return (ft_strdup(cmd));
+		return (ft_strdup(cmd));
 	cmd_paths = ft_split(data->paths, ':');
 	if (!cmd_paths)
 		ft_exit_error(data, "Malloc cmd_paths failed", ERROR_GENERAL);
@@ -76,16 +71,16 @@ char *get_cmd_path(t_data *data, char *cmd)
 	return (NULL);
 }
 
-int open_files(t_data *data, char *infile, char *outfile)
+int	open_files(t_data *data, char *infile, char *outfile)
 {
 	data->fd_input = open(infile, O_RDONLY);
 	if (data->fd_input == -1)
-		perror("Error"); // On continue même si erreur
+		perror("Error");
 	data->fd_output = open(outfile, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (data->fd_output == -1)
 	{
 		perror("Error");
-		return (-1); // Erreur critique pour le fichier de sortie
+		return (-1);
 	}
 	return (0);
 }
@@ -103,4 +98,3 @@ void	default_init(t_data *data)
 	data->cmd_path2 = NULL;
 	data->error_code = 0;
 }
-

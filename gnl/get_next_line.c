@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/10 22:55:03 by raphaelferr       #+#    #+#             */
-/*   Updated: 2024/11/17 18:46:58 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/30 07:01:05 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ char	*read_and_extract_line(t_gnl *node, char *buffer)
 		node->remainder = temp;
 	}
 }
+
 /**
 *@brief
 ** extrait une ligne de la chaine de caractere
@@ -90,7 +91,7 @@ char	*read_and_extract_line(t_gnl *node, char *buffer)
 *@param buffer la chain de caractere lu
 *@param newline_pos la position du caractere '\n'
 *@param line la ligne a retourner avec le ‘\n’ ou NULL si fin de fichier
-*@param temp_remainder la chaine de caractere temporaire pour stocker le reste de la ligne
+*@param temp_remainder la chaine de caractere temporaire pour stocker le reste
 *@param line_len la taille de la ligne
 *@return
 *$ que return la fonction
@@ -123,6 +124,7 @@ char	*extract_line(t_gnl *node)
 	}
 	return (line);
 }
+
 /**
 *@brief
 ** cherche un noeud dans la liste chainee
@@ -154,6 +156,7 @@ t_gnl	*get_fd_node(t_gnl **head, int fd)
 	*head = new_node;
 	return (new_node);
 }
+
 /**
 *@brief
 ** fonction principale

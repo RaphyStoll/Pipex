@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:40 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/29 13:28:12 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/30 06:59:36 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,6 @@
 # define REVERSE "\033[7m"
 # define CROSSED "\033[9m"
 
-#define NC "\033[0m"
+# define NC "\033[0m"
 
 #endif

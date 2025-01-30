@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 19:13:28 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/25 22:40:29 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/30 06:55:36 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ char	*get_next_word(char const *s, char c, int *index)
 		(*index)++;
 	len = *index - start;
 	if (len <= 0)
-		return  (NULL);
+		return (NULL);
 	return (ft_substr(s, start, len));
 }
 

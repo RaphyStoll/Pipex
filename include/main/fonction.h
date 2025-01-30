@@ -6,26 +6,25 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/29 13:51:29 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/30 07:06:14 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FONCTION_H
-#define FONCTION_H
+# define FONCTION_H
 
-#include "colors.h"
-#include "macro.h"
-#include "struct.h"
-#include "../../ft_printf/ft_printf.h"
-#include "../../gnl/get_next_line.h"
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <stdio.h>
+# include "colors.h"
+# include "struct.h"
+# include "../../ft_printf/ft_printf.h"
+# include "../../gnl/get_next_line.h"
+# include <unistd.h>
+# include <fcntl.h>
+# include <stdlib.h>
+# include <sys/wait.h>
+# include <stdio.h>
 
 //! int main
-int		main(int argc, char **argv, char **envp);
+int		main(int argc, char **argv);
 
 //! run_pipe
 void	run_pipe(t_data *data);
@@ -62,7 +61,7 @@ char	*ft_substr(char const *s, int start, int len);
 
 //! noyaux
 void	proces(t_data *data);
-char 	*find_path(t_data *data, char *cmd);
+char	*find_path(t_data *data, char *cmd);
 
 //! debug
 void	print_struct(t_data *data);

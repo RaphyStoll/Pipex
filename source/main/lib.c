@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:13 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/25 21:40:14 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/01/30 06:58:02 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 char	*ft_substr(char const *s, int start, int len)
 {
 	char	*dest;
-	int	i;
+	int		i;
 
 	if (!s)
 		return (NULL);
@@ -39,8 +39,8 @@ char	*ft_substr(char const *s, int start, int len)
 char	*ft_strdup(const char *s1)
 {
 	char	*dup;
-	int	len;
-	int	i;
+	int		len;
+	int		i;
 
 	i = 0;
 	len = ft_strlen(s1);
