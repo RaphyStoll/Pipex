@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/30 06:55:03 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/02/04 17:47:09 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,16 @@
 
 void	arg_verif(t_data *data, int argc, char **argv)
 {
+	int fd;
 	(void)argv;
 	if (argc != 5)
 		ft_exit_error(data, "Wrong number of arguments", ERROR_GENERAL);
+	if (access(argv[1], F_OK) == -1)
+		ft_exit_error(data, "Argv[1] error", ERROR_CMD_NOT_FOUND);
+	fd = open(data->file2, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd = -1)
+		ft_exit_error(data, "Arvg[4] error", ERROR_GENERAL);
+	close(fd);
 }
 
 void	ft_exit_error(t_data *data, char *message, t_error error_code)

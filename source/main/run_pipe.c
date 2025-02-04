@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/30 06:51:31 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/30 06:53:21 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/02/04 15:37:46 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,6 @@ void	child1(t_data *data)
 	close(data->fd_input);
 	close(data->fd_pipe[1]);
 	data->cmd_path = get_cmd_path(data, data->cmd1[0]);
-	printf("cmd_path: %s\n", data->cmd_path);
 	if (!data->cmd_path)
 		ft_exit_error(data, "Command not found", ERROR_CMD_NOT_FOUND);
 	if (execve(data->cmd_path, data->cmd1, NULL) == -1)
@@ -77,7 +76,6 @@ void	child2(t_data *data)
 	close(data->fd_output);
 	close(data->fd_pipe[0]);
 	data->cmd_path2 = get_cmd_path(data, data->cmd2[0]);
-	printf("cmd_path2: %s\n", data->cmd_path2);
 	if (!data->cmd_path2)
 		ft_exit_error(data, "Command not found", ERROR_CMD_NOT_FOUND);
 	if (execve(data->cmd_path2, data->cmd2, NULL) == -1)
