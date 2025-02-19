@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 14:43:38 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/01/30 07:06:14 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/02/19 14:55:14 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,8 @@
 
 # include "colors.h"
 # include "struct.h"
-# include "../../ft_printf/ft_printf.h"
-# include "../../gnl/get_next_line.h"
+# include "../../lib/ft_printf/ft_printf.h"
+
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdlib.h>
