@@ -6,7 +6,7 @@
 /*   By: raphaelferreira <raphaelferreira@studen    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/25 21:40:20 by raphaelferr       #+#    #+#             */
-/*   Updated: 2025/02/19 14:55:33 by raphaelferr      ###   ########.fr       */
+/*   Updated: 2025/02/19 15:18:14 by raphaelferr      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,8 @@
 
 void	arg_verif(t_data *data, int argc, char **argv)
 {
-	int fd;
+	int	fd;
+
 	(void)argv;
 	if (argc != 5)
 		ft_exit_error(data, "Wrong number of arguments", ERROR_GENERAL);
