@@ -5,7 +5,7 @@ pipex_bonus
 *.out
 *.a
 .vscode
-DS_Store
+.DS_Store
 a.out
 *.dSYM
 *.swp
