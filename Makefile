@@ -2,6 +2,14 @@
 # Configuration principale
 # ------------------------------------------------------------------------------
 
+
+# activation des library mettre yes ou non selon si l'on veut les use ou pas dans le projet
+USE_GNL = no
+USE_PRINTF = yes
+USE_LIBFT = no
+USE_BONUS = no
+
+
 # Nom de l'exécutable principal et bonus
 NAME        = output/pipex
 NAME_BONUS  = output/pipex_bonus
@@ -40,15 +48,31 @@ BONUS_OBJ   = $(OBJ_DIR)/bonus
 OUTPUT_DIR  = output
 
 # Répertoires des bibliothèques tierces
+LIB_DIR 	  = lib
 FT_PRINTF_DIR = ft_printf
 GNL_DIR       = gnl
+LIBFT_DIR	  = libft
 
 # Bibliothèques statiques
-FT_PRINTF_LIB = $(FT_PRINTF_DIR)/libftprintf.a
-GNL_LIB       = $(GNL_DIR)/libgnl.a
+FT_PRINTF_LIB = $(LIB_DIR)/$(FT_PRINTF_DIR)/libftprintf.a
+GNL_LIB       = $(LIB_DIR)/$(GNL_DIR)/libgnl.a
+LIBFT_LIB	  = $(LIB_DIR)/$(LIBFT_DIR)/libft.a
 
-# Regroupe toutes les libs
-ALL_LIBS      = $(FT_PRINTF_LIB) $(GNL_LIB)
+# Regroupe toutes les libs en foction des option
+
+ALL_LIBS =
+
+ifeq ($(USE_PRINTF), yes)
+	ALL_LIBS += $(FT_PRINTF_LIB)
+endif
+
+ifeq ($(USE_GNL), yes)
+	ALL_LIBS += $(GNL_LIB)
+endif
+
+ifeq ($(USE_LIBFT), yes)
+	ALL_LIBS += $(LIBFT_LIB)
+endif
 
 # ------------------------------------------------------------------------------
 # Sources Principales (NOMS SANS EXTENSION)
@@ -77,11 +101,14 @@ BONUS_SRCS = $(addprefix $(BONUS_DIR)/, $(addsuffix .c, $(BONUS_SRC)))
 BONUS_OBJS = $(addprefix $(BONUS_OBJ)/, $(addsuffix .o, $(BONUS_SRC)))
 
 # ------------------------------------------------------------------------------
-# Cibles principales
+# Cibles principales selon option
 # ------------------------------------------------------------------------------
-all: $(FT_PRINTF_LIB) $(GNL_LIB) $(NAME)
+all: $(ALL_LIBS) $(NAME)
 
-bonus: $(FT_PRINTF_LIB) $(GNL_LIB) $(NAME_BONUS)
+ifeq ($(USE_BONUS), yes)
+bonus: $(ALL_LIBS) $(NAME_BONUS)
+endif
+
 
 # ------------------------------------------------------------------------------
 # Compilation du binaire principal
@@ -129,23 +156,43 @@ $(BONUS_OBJ)/%.o: $(BONUS_DIR)/%.c | $(BONUS_OBJ)
 	$(CC) $(CFLAGS) -c $< -o $@ $(INCLUDES)
 
 # ------------------------------------------------------------------------------
-# Règles pour compiler les bibliothèques tierces
+# Règles pour compiler les bibliothèques tierces selon option
 # ------------------------------------------------------------------------------
-$(FT_PRINTF_LIB):
-	@echo "$(YELLOW)→ Building ft_printf library...$(RESET)"
-	@$(MAKE) -C $(FT_PRINTF_DIR)
+define build_lib
+$(1):
+	@echo "$(YELLOW)→ Building $(2) library...$(RESET)"
+	@$(MAKE) -C $(LIB_DIR)/$(3)
+endef
 
-$(GNL_LIB):
-	@echo "$(YELLOW)→ Building gnl library...$(RESET)"
-	@$(MAKE) -C $(GNL_DIR)
+ifeq ($(USE_PRINTF), yes)
+$(eval $(call build_lib,$(FT_PRINTF_LIB),PRINTF,$(FT_PRINTF_DIR)))
+endif
+
+ifeq ($(USE_GNL), yes)
+$(eval $(call build_lib,$(GNL_LIB),GNL,$(GNL_DIR)))
+endif
+
+ifeq ($(USE_LIBFT), yes)
+$(eval $(call build_lib,$(LIBFT_LIB),LIBFT,$(LIBFT_DIR)))
+endif
 
 # ------------------------------------------------------------------------------
 # Nettoyage
 # ------------------------------------------------------------------------------
 clean:
-	@echo "$(RED)→ Cleaning ft_printf and gnl libraries...$(RESET)"
-	@$(MAKE) -C $(FT_PRINTF_DIR) fclean
-	@$(MAKE) -C $(GNL_DIR) fclean
+	@echo "$(RED)→ Cleaning libraries...$(RESET)"
+ifeq ($(USE_PRINTF), yes)
+	@echo "$(RED)→ Cleaning Printf...$(RESET)"
+	@$(MAKE) -C $(LIB_DIR)/$(FT_PRINTF_DIR) fclean
+endif
+ifeq ($(USE_GNL), yes)
+	@echo "$(RED)→ Cleaning GNL...$(RESET)"
+	@$(MAKE) -C $(LIB_DIR)/$(GNL_DIR) fclean
+endif
+ifeq ($(USE_LIBFT), yes)
+	@echo "$(RED)→ Cleaning Libft...$(RESET)"
+	@$(MAKE) -C $(LIB_DIR)/$(LIBFT_DIR) fclean
+endif
 	@echo "$(RED)→ Removing object files...$(RESET)"
 	$(RM) $(MAIN_OBJS) $(BONUS_OBJS)
 	@echo "$(RED)→ Removing '$(OBJ_DIR)' directory...$(RESET)"
@@ -160,4 +207,4 @@ re: fclean all
 # ------------------------------------------------------------------------------
 # Cibles phony
 # ------------------------------------------------------------------------------
-.PHONY: all clean fclean re bonus cleanall
+.PHONY: all clean fclean re bonus
