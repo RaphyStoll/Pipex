@@ -81,10 +81,10 @@ seront ajoutées ultérieurement a mon projet.
 pipex/
 │
 ├── include/
-│   ├── main/
-│   │   ├── colors.h
-│   │   ├── fonction.h
-│   │   └── struct.h
+│   └── main/
+│       ├── colors.h
+│       ├── fonction.h
+│       └── struct.h
 │
 ├── lib/
 │   └── ft_printf/
@@ -96,15 +96,15 @@ pipex/
 │       └── ft_printf_utils.c
 │
 ├── source/
-│   ├── main/
-│   │   ├── debbug.c
-│   │   ├── free.c
-│   │   ├── ft_split.c
-│   │   ├── init.c
-│   │   ├── lib.c
-│   │   ├── main.c
-│   │   ├── run_pipe.c
-│   │   └── utils.c
+│   └── main/
+│       ├── debbug.c
+│       ├── free.c
+│       ├── ft_split.c
+│       ├── init.c
+│       ├── lib.c
+│       ├── main.c
+│       ├── run_pipe.c
+│       └── utils.c
 │
 ├── Makefile
 ├── Pipex_test.sh
