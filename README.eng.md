@@ -1,5 +1,17 @@
 # Pipex
 
+<a href="https://github.com/RaphyStoll/Pipex/blob/main/README.md" style="text-decoration:none;">
+  <button style="background-color:#e0f7fa; border:none; cursor:pointer;">
+    🇫🇷 Français
+  </button>
+</a>
+&nbsp;&nbsp;
+<a href="https://github.com/RaphyStoll/Pipex/blob/main/README.eng.md" style="text-decoration:none;">
+  <button style="border:none; cursor:pointer;">
+    🇬🇧 English
+  </button>
+</a>
+
 ## Summary
 
 This project involves implementing a UNIX mechanism for handling pipes in the C programming

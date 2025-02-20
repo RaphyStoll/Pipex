@@ -1,12 +1,12 @@
 # Pipex
 
-<a href="https://github.com/RaphyStoll/Get_next_line/blob/main/README.md" style="text-decoration:none;">
+<a href="https://github.com/RaphyStoll/Pipex/blob/main/README.md" style="text-decoration:none;">
   <button style="background-color:#e0f7fa; border:none; cursor:pointer;">
     🇫🇷 Français
   </button>
 </a>
 &nbsp;&nbsp;
-<a href="https://github.com/RaphyStoll/Get_next_line/blob/main/README.eng.md" style="text-decoration:none;">
+<a href="https://github.com/RaphyStoll/Pipex/blob/main/README.eng.md" style="text-decoration:none;">
   <button style="border:none; cursor:pointer;">
     🇬🇧 English
   </button>
@@ -21,16 +21,16 @@ redirections de fichiers sous UNIX.
 ## Table des matières
 
 - [Pipex](#pipex)
-	- [Résumé](#résumé)
-	- [Table des matières](#table-des-matières)
-	- [Préambule](#préambule)
-	- [Règles communes](#règles-communes)
-	- [Partie obligatoire](#partie-obligatoire)
-		- [Exemples](#exemples)
-	- [Partie bonus](#partie-bonus)
-	- [Structure du projet](#structure-du-projet)
-	- [Compilation](#compilation)
-	- [Exécution](#exécution)
+  - [Résumé](#résumé)
+  - [Table des matières](#table-des-matières)
+  - [Préambule](#préambule)
+  - [Règles communes](#règles-communes)
+  - [Partie obligatoire](#partie-obligatoire)
+    - [Exemples](#exemples)
+  - [Partie bonus](#partie-bonus)
+  - [Structure du projet](#structure-du-projet)
+  - [Compilation](#compilation)
+  - [Exécution](#exécution)
 
 ## Préambule
 
